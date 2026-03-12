@@ -1,0 +1,28 @@
+
+Convert the promise based code into async/await compatible code. Here’s a refresher of the code we are starting with:
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <img src="#">
+ 
+<script>
+  const img = document.querySelector('img');
+  fetch('https://api.giphy.com/v1/gifs/translate?api_key=YOUR_KEY_HERE&s=cats')
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(response) {
+      img.src = response.data.images.original.url;
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+</script>
+</body>
+</html>
