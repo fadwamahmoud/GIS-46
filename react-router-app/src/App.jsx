@@ -23,6 +23,9 @@ function App() {
           <li>
             <Link to="profile/batman"> Batman</Link>
           </li>
+          <li>
+            <Link to="image"> Image</Link>
+          </li>
         </ul>
       </nav>
     </div>
