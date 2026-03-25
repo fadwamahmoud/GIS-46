@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chapter 4 – Environment Variables</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#1a1a1a;color:#f0f0f0;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none}
+.slide-container{flex:1;display:flex;align-items:center;justify-content:center;padding:36px 56px;overflow:hidden}
+.slide{display:none;width:100%;max-width:920px;animation:appear .2s ease}
+.slide.active{display:flex;flex-direction:column;gap:22px}
+@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* title */
+.slide-title{text-align:center;align-items:center;gap:14px}
+.chapter-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:#888;letter-spacing:.12em;text-transform:uppercase}
+.slide-title h1{font-size:46px;font-weight:700;line-height:1.1;color:#fff}
+.slide-title .subtitle{font-size:17px;color:#aaa;max-width:560px;line-height:1.6}
+.accent-bar{width:60px;height:3px;border-radius:2px}
+
+/* section divider */
+.slide-section{justify-content:center;gap:12px}
+.slide-section .sec-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:#5b9cf6;border:1px solid #2a4a7a;padding:4px 12px;border-radius:3px;width:fit-content;align-self:center}
+.slide-section h1{font-size:38px;font-weight:700;color:#fff;text-align:center}
+.slide-section p{font-size:16px;color:#888;text-align:center}
+
+/* content */
+.slide-content h2{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#5b9cf6}
+.slide-content h1{font-size:30px;font-weight:700;color:#fff;line-height:1.2}
+
+/* bullets */
+.bullet-list{display:flex;flex-direction:column;gap:10px}
+.bullet-item{display:flex;align-items:flex-start;gap:14px;background:#252525;border:1px solid #333;border-radius:6px;padding:13px 17px}
+.dot{width:8px;height:8px;border-radius:50%;background:#5b9cf6;margin-top:6px;flex-shrink:0}
+.dot.g{background:#4ade80}.dot.o{background:#fb923c}.dot.p{background:#a78bfa}.dot.r{background:#f87171}
+.bullet-item p{font-size:15px;color:#ddd;line-height:1.6}
+.bullet-item p strong{color:#fff}
+.ic{font-family:'JetBrains Mono',monospace;font-size:12px;background:#111;padding:1px 6px;border-radius:3px;color:#f0c060}
+
+/* callout */
+.callout{background:#1d2533;border:1px solid #3a5070;border-left:4px solid #5b9cf6;border-radius:0 6px 6px 0;padding:14px 18px}
+.callout.g{background:#1a2a1a;border-color:#2a4a2a;border-left-color:#4ade80}
+.callout.o{background:#2a1d10;border-color:#5a3a20;border-left-color:#fb923c}
+.callout.r{background:#2a1414;border-color:#5a2020;border-left-color:#f87171}
+.callout.p{background:#221d2a;border-color:#4a3a5a;border-left-color:#a78bfa}
+.callout p{font-size:14px;color:#ddd;line-height:1.7}
+.callout p strong{color:#fff}
+
+/* code */
+.code-block{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:6px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9;color:#ccc;overflow-x:auto}
+.code-block .fname{font-size:10px;color:#555;letter-spacing:.08em;margin-bottom:8px;display:block}
+.kw{color:#5b9cf6}.fn{color:#f0c060}.str{color:#4ade80}.cm{color:#555;font-style:italic}.num{color:#fb923c}.prop{color:#a78bfa}.env{color:#fb923c;font-weight:600}
+
+/* two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.col-card{background:#252525;border:1px solid #333;border-radius:8px;padding:18px 18px 20px;display:flex;flex-direction:column;gap:10px}
+.col-card.b{border-top:3px solid #5b9cf6}.col-card.g{border-top:3px solid #4ade80}.col-card.o{border-top:3px solid #fb923c}.col-card.r{border-top:3px solid #f87171}
+.col-card h3{font-size:16px;font-weight:700}
+.col-card.b h3{color:#5b9cf6}.col-card.g h3{color:#4ade80}.col-card.o h3{color:#fb923c}.col-card.r h3{color:#f87171}
+.col-card p{font-size:13px;color:#bbb;line-height:1.7}
+
+/* table */
+.simple-table{border:1px solid #333;border-radius:8px;overflow:hidden;width:100%}
+.table-row{display:grid;grid-template-columns:1fr 2fr}
+.table-row.w3{grid-template-columns:1fr 1fr 1fr}
+.table-row.header{background:#252525;border-bottom:1px solid #333}
+.table-row:not(.header){border-bottom:1px solid #222}
+.table-row:last-child{border-bottom:none}
+.table-cell{padding:10px 16px;font-size:13px;color:#bbb;border-right:1px solid #222;line-height:1.5}
+.table-cell:last-child{border-right:none}
+.table-row.header .table-cell{font-weight:700;color:#ddd;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.table-cell strong{color:#fff}
+.table-cell code{font-family:'JetBrains Mono',monospace;font-size:11px;background:#111;padding:1px 5px;border-radius:3px;color:#f0c060}
+.yes{color:#4ade80;font-weight:600}.no{color:#f87171}
+
+/* terminal window */
+.terminal{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden}
+.terminal-bar{background:#1a1a1a;border-bottom:1px solid #222;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#666;display:flex;align-items:center;gap:8px}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.terminal-body{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:2}
+.t-prompt{color:#5b9cf6}
+.t-cmd{color:#f0f0f0}
+.t-out{color:#4ade80}
+.t-dim{color:#555}
+.t-warn{color:#fb923c}
+
+/* annotation row */
+.annotation{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px}
+.ann-dot{width:6px;height:6px;border-radius:50%;background:#5b9cf6;margin-top:6px;flex-shrink:0}
+.ann-dot.o{background:#fb923c}.ann-dot.g{background:#4ade80}.ann-dot.r{background:#f87171}
+.annotation p{font-size:13px;color:#999;line-height:1.6}
+.annotation p strong{color:#ddd}
+
+/* qa */
+.qa-list{display:flex;flex-direction:column;gap:10px}
+.qa-item{background:#252525;border:1px solid #333;border-radius:6px;padding:13px 17px;display:flex;gap:14px;align-items:flex-start}
+.qa-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:#5b9cf6;font-weight:600;min-width:26px;padding-top:1px}
+.qa-item p{font-size:14px;color:#ddd;line-height:1.6}
+
+/* bottom bar */
+.bottom-bar{height:54px;background:#111;border-top:1px solid #2a2a2a;display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.slide-counter{font-family:'JetBrains Mono',monospace;font-size:12px;color:#666}
+.slide-title-label{font-size:13px;color:#888;font-weight:600}
+.nav-btns{display:flex;gap:8px}
+.nav-btn{background:#252525;border:1px solid #3a3a3a;color:#ccc;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;padding:6px 16px;border-radius:5px;cursor:pointer;transition:background .15s}
+.nav-btn:hover{background:#333}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ SLIDES ═══════════════════════ -->
+
+<!-- 1: Title -->
+<div class="slide slide-title active" data-title="Title">
+  <div class="chapter-label">Chapter 4 · Node.js for Beginners</div>
+  <h1>Environment<br>Variables</h1>
+  <div class="accent-bar" style="background:#5b9cf6"></div>
+  <p class="subtitle">How to configure your app differently across machines, store secrets safely, and never hardcode sensitive values again.</p>
+</div>
+
+<!-- 2: What is an environment? -->
+<div class="slide slide-content" data-title="What is an environment?">
+  <h2>The Concept</h2>
+  <h1>Every machine your code runs on is a different environment</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot"></div><p>Your <strong>laptop during development</strong> — one environment.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p>A <strong>server on Netlify or Vercel</strong> when deployed — a different environment.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p>A <strong>colleague's machine</strong> — yet another environment.</p></div>
+    <div class="bullet-item"><div class="dot o"></div><p>Each environment has its own tools, configurations, and <strong>secret values</strong>. You need a way to pass those values to your app without baking them into the source code.</p></div>
+  </div>
+  <div class="callout">
+    <p>Think of it like a function with parameters. You call the same function with different arguments in different situations. <strong>Environment variables are the parameters for your entire application.</strong></p>
+  </div>
+</div>
+
+<!-- 3: What are env vars -->
+<div class="slide slide-content" data-title="What are environment variables?">
+  <h2>Environment Variables</h2>
+  <h1>What are environment variables?</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot g"></div><p>Environment variables are <strong>key-value pairs</strong> available to a running process. They are set in the environment, not inside your code.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>They let you <strong>provide different values for different environments</strong> — dev vs production — without touching source code.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>They are the standard place to store <strong>secrets</strong>: database URLs, passwords, API keys — anything you must not commit to Git.</p></div>
+  </div>
+  <div class="two-col" style="margin-top:4px">
+    <div class="col-card o">
+      <h3>Without env vars</h3>
+      <p>Secrets are hardcoded in source files. Anyone with repo access can read them. Changing a value means changing code and redeploying.</p>
+    </div>
+    <div class="col-card g">
+      <h3>With env vars</h3>
+      <p>Secrets live outside the code. The same codebase runs with different config in dev vs prod. Change a value without touching code at all.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 4: Common uses -->
+<div class="slide slide-content" data-title="Common uses">
+  <h2>Environment Variables</h2>
+  <h1>What you'll use them for in practice</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot p"></div><p><strong>NODE_ENV</strong> — the most common env var. Set to <code class="ic">"development"</code> or <code class="ic">"production"</code> so your app behaves differently in each context (extra logging, error details, etc.).</p></div>
+    <div class="bullet-item"><div class="dot p"></div><p><strong>Database credentials</strong> — your local dev database URL and password vs the live production database. Never the same, never in your code.</p></div>
+    <div class="bullet-item"><div class="dot p"></div><p><strong>API keys</strong> — third-party services (payment processors, email APIs, maps). They must stay secret.</p></div>
+    <div class="bullet-item"><div class="dot p"></div><p><strong>PORT</strong> — the port your server should listen on. Deployment platforms often set this for you automatically.</p></div>
+  </div>
+</div>
+
+<!-- 5: Naming convention -->
+<div class="slide slide-content" data-title="Naming convention">
+  <h2>Environment Variables</h2>
+  <h1>Naming convention — UPPER_SNAKE_CASE</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot"></div><p>The convention is <strong>UPPER_SNAKE_CASE</strong> — all capitals, words separated by underscores. This is sometimes called <strong>SCREAMING_SNAKE_CASE</strong>.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Valid names contain only <strong>letters, digits, and underscores</strong>, and cannot begin with a digit.</p></div>
+    <div class="bullet-item"><div class="dot r"></div><p>Invalid: names starting with a number (<code class="ic">1_VAR</code>), containing hyphens (<code class="ic">my-var</code>), spaces (<code class="ic">my var</code>), or special characters (<code class="ic">VAR_#1</code>).</p></div>
+  </div>
+  <div class="simple-table">
+    <div class="table-row header w3"><div class="table-cell">Valid</div><div class="table-cell">Also valid</div><div class="table-cell">Not valid</div></div>
+    <div class="table-row w3">
+      <div class="table-cell"><code>NODE_ENV</code></div>
+      <div class="table-cell"><code>myVar</code></div>
+      <div class="table-cell"><code>1_VAR</code> <span style="color:#555;font-size:11px">— starts with digit</span></div>
+    </div>
+    <div class="table-row w3">
+      <div class="table-cell"><code>DATABASE_URL</code></div>
+      <div class="table-cell"><code>My_Var123</code></div>
+      <div class="table-cell"><code>my-var</code> <span style="color:#555;font-size:11px">— hyphen not allowed</span></div>
+    </div>
+    <div class="table-row w3">
+      <div class="table-cell"><code>API_KEY</code></div>
+      <div class="table-cell"><code>MY_VAR_1</code></div>
+      <div class="table-cell"><code>VAR_#1</code> <span style="color:#555;font-size:11px">— special character</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SECTION: Loading ─── -->
+<!-- 6 -->
+<div class="slide slide-section" data-title="— Loading env vars —">
+  <div class="sec-tag">Part 1</div>
+  <h1>Loading Environment Variables</h1>
+  <p>Three ways to get env vars into your running app</p>
+</div>
+
+<!-- 7: Method 1 — inline -->
+<div class="slide slide-content" data-title="Method 1 — inline in command">
+  <h2>Loading · Method 1</h2>
+  <h1>Inline in the terminal command</h1>
+  <div class="terminal">
+    <div class="terminal-bar"><div class="t-dot" style="background:#f87171"></div><div class="t-dot" style="background:#fbbf24"></div><div class="t-dot" style="background:#4ade80"></div><span style="margin-left:8px">terminal</span></div>
+    <div class="terminal-body">
+      <div><span class="t-dim">$ </span><span class="t-cmd"><span class="env">NODE_ENV</span>=prod <span class="env">DB_URL</span>="postgres://localhost/mydb" node index.js</span></div>
+    </div>
+  </div>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot"></div><p>Variables are defined <strong>before</strong> the <code class="ic">node</code> command on the same line. They are available only for that one run.</p></div>
+    <div class="bullet-item"><div class="dot o"></div><p><strong>Downside:</strong> quickly gets unwieldy with many variables. Sensitive values like passwords are visible in your shell history.</p></div>
+    <div class="bullet-item"><div class="dot o"></div><p>Quoting is optional for simple values, but <strong>required for values containing spaces or special characters</strong> like <code class="ic">=</code>.</p></div>
+  </div>
+</div>
+
+<!-- 8: Method 2 — export -->
+<div class="slide slide-content" data-title="Method 2 — export">
+  <h2>Loading · Method 2</h2>
+  <h1>Using the shell's <code style="font-size:26px;background:#111;padding:2px 10px;border-radius:4px;color:#f0c060">export</code> command</h1>
+  <div class="terminal">
+    <div class="terminal-bar"><div class="t-dot" style="background:#f87171"></div><div class="t-dot" style="background:#fbbf24"></div><div class="t-dot" style="background:#4ade80"></div><span style="margin-left:8px">terminal</span></div>
+    <div class="terminal-body">
+      <div><span class="t-dim">$ </span><span class="t-cmd">export <span class="env">NODE_ENV</span>=prod <span class="env">API_KEY</span>="abc123"</span></div>
+      <div><span class="t-dim">$ </span><span class="t-cmd">node index.js</span></div>
+      <div class="t-dim" style="margin-top:6px"># In a NEW terminal tab:</div>
+      <div><span class="t-dim">$ </span><span class="t-cmd">node index.js</span></div>
+      <div class="t-warn">  → NODE_ENV is undefined here — new shell, fresh environment</div>
+    </div>
+  </div>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot g"></div><p><code class="ic">export</code> saves variables into the <strong>current shell session</strong>. All subsequent commands in that shell can read them.</p></div>
+    <div class="bullet-item"><div class="dot o"></div><p><strong>Downside:</strong> variables are lost when you close the terminal. A new shell tab starts completely fresh. Run <code class="ic">printenv</code> to see all current variables.</p></div>
+  </div>
+</div>
+
+<!-- 9: Method 3 — .env file -->
+<div class="slide slide-content" data-title="Method 3 — .env file">
+  <h2>Loading · Method 3 (recommended)</h2>
+  <h1>The <code style="font-size:26px;background:#111;padding:2px 10px;border-radius:4px;color:#4ade80">.env</code> file</h1>
+  <div class="two-col">
+    <div>
+      <div class="code-block">
+        <span class="fname">.env</span><span class="cm"># Comments start with #</span>
+<span class="env">NODE_ENV</span>=development
+<span class="env">PORT</span>=3000
+<span class="env">DB_URL</span>=<span class="str">"postgres://localhost/mydb"</span>
+<span class="env">API_KEY</span>=<span class="str">"abc-super-secret-123"</span></div>
+    </div>
+    <div>
+      <div class="terminal">
+        <div class="terminal-bar"><div class="t-dot" style="background:#f87171"></div><div class="t-dot" style="background:#fbbf24"></div><div class="t-dot" style="background:#4ade80"></div><span style="margin-left:8px">terminal</span></div>
+        <div class="terminal-body" style="font-size:12px">
+          <div><span class="t-dim">$ </span><span class="t-cmd">node --env-file=.env index.js</span></div>
+          <div class="t-out" style="margin-top:4px">Server running on port 3000</div>
+          <div style="margin-top:10px"><span class="t-dim"># Optional flag if file may not exist:</span></div>
+          <div><span class="t-dim">$ </span><span class="t-cmd">node --env-file-if-exists=.env index.js</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot g"></div><p>All variables in one place, <strong>persists across sessions</strong>, easy to edit. The <code class="ic">--env-file</code> flag (built into Node since v20.6) loads it automatically.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Pass <strong>multiple</strong> <code class="ic">--env-file</code> flags for layered configs — later files override earlier ones.</p></div>
+  </div>
+</div>
+
+<!-- 10: .env file syntax detail -->
+<div class="slide slide-content" data-title=".env file syntax">
+  <h2>.env File Syntax</h2>
+  <h1>What you can put in a .env file</h1>
+  <div class="simple-table">
+    <div class="table-row header"><div class="table-cell">Syntax</div><div class="table-cell">Example and result</div></div>
+    <div class="table-row"><div class="table-cell"><strong>Plain value</strong></div><div class="table-cell"><code>PORT=3000</code> → value is the string <code>"3000"</code></div></div>
+    <div class="table-row"><div class="table-cell"><strong>Quoted value</strong></div><div class="table-cell"><code>NAME="my app"</code> → quotes are stripped, value is <code>my app</code></div></div>
+    <div class="table-row"><div class="table-cell"><strong>Single quotes</strong></div><div class="table-cell"><code>KEY='abc123'</code> → also valid, quotes stripped</div></div>
+    <div class="table-row"><div class="table-cell"><strong>Comment</strong></div><div class="table-cell"><code># This is a comment</code> → ignored entirely</div></div>
+    <div class="table-row"><div class="table-cell"><strong>Multiline</strong></div><div class="table-cell"><code>MSG="line one\nline two"</code> → <code>\n</code> becomes a real newline</div></div>
+    <div class="table-row"><div class="table-cell"><strong>export keyword</strong></div><div class="table-cell"><code>export PORT=3000</code> → the <code>export</code> is ignored, works the same</div></div>
+  </div>
+  <div class="callout o">
+    <p>If the same variable is defined <strong>both in the shell environment and in the .env file</strong>, the shell environment value takes precedence. The .env file does not override what's already set.</p>
+  </div>
+</div>
+
+<!-- 11: dotenv package -->
+<div class="slide slide-content" data-title="The dotenv package">
+  <h2>Third-party Option</h2>
+  <h1>The dotenv package — you'll see this in the wild</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot p"></div><p>Before Node had built-in <code class="ic">--env-file</code> support, the <strong>dotenv</strong> npm package was the standard way to load <code class="ic">.env</code> files.</p></div>
+    <div class="bullet-item"><div class="dot p"></div><p>Many existing projects and tutorials still use it. The concept is identical — same <code class="ic">.env</code> file format, same <code class="ic">process.env</code> access.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p>To use it: <code class="ic">npm install dotenv</code>, then call <code class="ic">require('dotenv').config()</code> at the top of your entry file.</p></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;margin-bottom:6px;letter-spacing:.08em">With dotenv (older approach)</div>
+      <div class="code-block"><span class="fn">require</span>(<span class="str">'dotenv'</span>).<span class="fn">config</span>();
+<span class="cm">// now process.env is populated</span>
+console.<span class="fn">log</span>(<span class="prop">process</span>.<span class="prop">env</span>.<span class="env">PORT</span>);</div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;margin-bottom:6px;letter-spacing:.08em">Built-in Node (modern approach)</div>
+      <div class="code-block"><span class="cm"># terminal</span>
+node --env-file=.env index.js
+<span class="cm"># no extra package needed</span>
+<span class="cm"># process.env is already loaded</span></div>
+    </div>
+  </div>
+  <div class="callout p">
+    <p>For this course, <strong>use the built-in <code class="ic">--env-file</code> flag</strong>. But recognise dotenv when you see it — the result is the same.</p>
+  </div>
+</div>
+
+<!-- ─── SECTION: Accessing ─── -->
+<!-- 12 -->
+<div class="slide slide-section" data-title="— Accessing env vars —">
+  <div class="sec-tag">Part 2</div>
+  <h1>Accessing Environment Variables</h1>
+  <p>Reading them inside your Node.js code</p>
+</div>
+
+<!-- 13: process.env -->
+<div class="slide slide-content" data-title="process.env">
+  <h2>Accessing Variables</h2>
+  <h1>process.env — the object that holds them all</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot g"></div><p>Node's built-in <strong><code class="ic">process</code></strong> object represents the current running process. Its <strong><code class="ic">process.env</code></strong> property is a plain object containing every environment variable loaded for this session.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Access any variable like a regular object property: <code class="ic">process.env.MY_VAR</code>.</p></div>
+    <div class="bullet-item"><div class="dot o"></div><p>If the variable isn't set, the value will be <strong><code class="ic">undefined</code></strong> — always check before relying on it.</p></div>
+  </div>
+  <div class="code-block"><span class="cm">// Reading environment variables in your app</span>
+console.<span class="fn">log</span>(<span class="prop">process</span>.<span class="prop">env</span>.<span class="env">NODE_ENV</span>);   <span class="cm">// "development" or "production"</span>
+console.<span class="fn">log</span>(<span class="prop">process</span>.<span class="prop">env</span>.<span class="env">PORT</span>);       <span class="cm">// "3000"</span>
+console.<span class="fn">log</span>(<span class="prop">process</span>.<span class="prop">env</span>.<span class="env">API_KEY</span>);    <span class="cm">// "abc-super-secret-123"</span>
+console.<span class="fn">log</span>(<span class="prop">process</span>.<span class="prop">env</span>.<span class="env">NOT_SET</span>);   <span class="cm">// undefined</span></div>
+</div>
+
+<!-- 14: Using env vars in practice -->
+<div class="slide slide-content" data-title="Using env vars in code">
+  <h2>Accessing Variables</h2>
+  <h1>Using env vars to change behaviour</h1>
+  <div class="code-block"><span class="cm">// index.js — loaded with: node --env-file=.env index.js</span>
+
+<span class="kw">const</span> http = <span class="fn">require</span>(<span class="str">'http'</span>);
+
+<span class="kw">const</span> PORT = <span class="prop">process</span>.<span class="prop">env</span>.<span class="env">PORT</span> || <span class="num">3000</span>;
+<span class="kw">const</span> isDev = <span class="prop">process</span>.<span class="prop">env</span>.<span class="env">NODE_ENV</span> === <span class="str">'development'</span>;
+
+http.<span class="fn">createServer</span>((req, res) => {
+  <span class="kw">if</span> (isDev) {
+    console.<span class="fn">log</span>(<span class="str">`[DEV] </span>${req.<span class="prop">method</span>} <span class="str">${req.<span class="prop">url</span>}</span><span class="str">`</span>);
+  }
+  res.<span class="fn">end</span>(<span class="str">'Hello!'</span>);
+}).<span class="fn">listen</span>(PORT, () => {
+  console.<span class="fn">log</span>(<span class="str">`Server running on port </span>${PORT}<span class="str">`</span>);
+});</div>
+  <div class="annotation"><div class="ann-dot o"></div><p><strong>|| 3000</strong> is a fallback — if PORT isn't set, default to 3000. This is a very common pattern.</p></div>
+</div>
+
+<!-- 15: env vars are always strings -->
+<div class="slide slide-content" data-title="Always strings">
+  <h2>Important Gotcha</h2>
+  <h1>Environment variables are always strings</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot r"></div><p>No matter what you put in the <code class="ic">.env</code> file, Node always reads it as a <strong>string</strong>. There are no numbers or booleans — only strings.</p></div>
+    <div class="bullet-item"><div class="dot r"></div><p>If you need a number or boolean, you must <strong>convert it yourself</strong> after reading it.</p></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#f87171;margin-bottom:6px;letter-spacing:.08em">WRONG — this is a bug</div>
+      <div class="code-block"><span class="cm"># .env</span>
+<span class="env">PORT</span>=3000
+<span class="env">DEBUG</span>=true
+
+<span class="cm">// index.js</span>
+<span class="kw">const</span> port = <span class="prop">process</span>.<span class="prop">env</span>.<span class="env">PORT</span>;
+<span class="cm">// port === "3000" (string!)</span>
+
+<span class="kw">if</span> (<span class="prop">process</span>.<span class="prop">env</span>.<span class="env">DEBUG</span>) {
+  <span class="cm">// ALWAYS runs — "false" is truthy!</span>
+}</div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#4ade80;margin-bottom:6px;letter-spacing:.08em">RIGHT — convert explicitly</div>
+      <div class="code-block"><span class="cm"># .env</span>
+<span class="env">PORT</span>=3000
+<span class="env">DEBUG</span>=true
+
+<span class="cm">// index.js</span>
+<span class="kw">const</span> port = <span class="fn">Number</span>(<span class="prop">process</span>.<span class="prop">env</span>.<span class="env">PORT</span>);
+<span class="cm">// port === 3000 (number)</span>
+
+<span class="kw">const</span> debug =
+  <span class="prop">process</span>.<span class="prop">env</span>.<span class="env">DEBUG</span> === <span class="str">'true'</span>;
+<span class="cm">// debug === true (boolean)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SECTION: Safety ─── -->
+<!-- 16 -->
+<div class="slide slide-section" data-title="— Keeping secrets safe —">
+  <div class="sec-tag">Part 3</div>
+  <h1>Keeping Secrets Safe</h1>
+  <p>The rules that matter most when using env vars</p>
+</div>
+
+<!-- 17: .gitignore -->
+<div class="slide slide-content" data-title="Never commit .env">
+  <h2>Security</h2>
+  <h1>Never commit your .env file to Git</h1>
+  <div class="callout r">
+    <p><strong>This is the single most important rule.</strong> If your .env file contains database passwords or API keys and you push it to a public GitHub repo, those secrets are immediately exposed — to the whole internet, forever, even if you delete the file later.</p>
+  </div>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot r"></div><p>Add <code class="ic">.env</code> to your <strong>.gitignore</strong> file on day one, before writing a single secret into it.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Create a <strong>.env.sample</strong> file with placeholder values — commit that instead, so teammates know which variables are needed.</p></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;margin-bottom:6px;letter-spacing:.08em">.gitignore — add this</div>
+      <div class="code-block"><span class="cm"># Environment variables</span>
+.env
+.env.local
+.env.*.local</div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;margin-bottom:6px;letter-spacing:.08em">.env.sample — commit this</div>
+      <div class="code-block"><span class="cm"># Copy to .env and fill in values</span>
+<span class="env">NODE_ENV</span>=development
+<span class="env">PORT</span>=3000
+<span class="env">DB_URL</span>=your_database_url_here
+<span class="env">API_KEY</span>=your_api_key_here</div>
+    </div>
+  </div>
+</div>
+
+<!-- 18: Deployment -->
+<div class="slide slide-content" data-title="Env vars in deployment">
+  <h2>Deployment</h2>
+  <h1>How environment variables work when you deploy</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot"></div><p>When you deploy, your repo won't contain your <code class="ic">.env</code> file — it's gitignored. The deployment platform needs to know your variables another way.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Every major platform (Netlify, Vercel, Railway, Render, Heroku…) has a <strong>dashboard UI</strong> where you set environment variables. They get injected into your app at runtime.</p></div>
+    <div class="bullet-item"><div class="dot o"></div><p>Your production <code class="ic">npm start</code> script should run just <code class="ic">node index.js</code> — <strong>without</strong> the <code class="ic">--env-file</code> flag, since the platform provides the variables directly.</p></div>
+  </div>
+  <div class="simple-table">
+    <div class="table-row header w3"><div class="table-cell">Script</div><div class="table-cell">Use when</div><div class="table-cell">Why</div></div>
+    <div class="table-row w3">
+      <div class="table-cell"><code>node --env-file=.env index.js</code></div>
+      <div class="table-cell">Local development</div>
+      <div class="table-cell">Loads your local .env file</div>
+    </div>
+    <div class="table-row w3">
+      <div class="table-cell"><code>node index.js</code></div>
+      <div class="table-cell">Production / deployment</div>
+      <div class="table-cell">Platform injects vars itself</div>
+    </div>
+    <div class="table-row w3">
+      <div class="table-cell"><code>node --env-file-if-exists=.env index.js</code></div>
+      <div class="table-cell">Either (optional file)</div>
+      <div class="table-cell">No error if .env is missing</div>
+    </div>
+  </div>
+</div>
+
+<!-- 19: Documenting env vars -->
+<div class="slide slide-content" data-title="Documenting env vars">
+  <h2>Best Practice</h2>
+  <h1>Document your environment variables</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot g"></div><p>Anyone who clones your repo needs to know <strong>which variables to set</strong> before the app will run. Document them.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Add a section to your <strong>README.md</strong> listing each variable, what it does, whether it's required, and an example value.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Include a <strong>.env.sample</strong> in the repo with dummy values. Anyone cloning the repo can copy it to <code class="ic">.env</code> and fill in real values.</p></div>
+  </div>
+  <div class="code-block">
+<span class="cm">## README.md — Environment Variables section</span>
+
+<span class="str">### Required environment variables</span>
+
+<span class="str">| Variable    | Description                    | Example               |</span>
+<span class="str">|-------------|--------------------------------|-----------------------|</span>
+<span class="str">| NODE_ENV    | Runtime environment            | development           |</span>
+<span class="str">| PORT        | Port the server listens on     | 3000                  |</span>
+<span class="str">| DB_URL      | PostgreSQL connection string   | postgres://localhost/  |</span>
+<span class="str">| API_KEY     | Third-party API authentication | (get from provider)   |</span>
+
+<span class="cm">Copy `.env.sample` to `.env` and fill in your values.</span></div>
+</div>
+
+<!-- 20: Complete workflow -->
+<div class="slide slide-content" data-title="Complete workflow">
+  <h2>Putting It All Together</h2>
+  <h1>The complete env var workflow</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot"></div><p><strong>Step 1:</strong> Add <code class="ic">.env</code> to <code class="ic">.gitignore</code> immediately when starting a project.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><strong>Step 2:</strong> Create a <code class="ic">.env</code> file with your local values. Create a <code class="ic">.env.sample</code> with placeholder values and commit that.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><strong>Step 3:</strong> Run your dev server with <code class="ic">node --env-file=.env index.js</code>.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><strong>Step 4:</strong> Access values in code via <code class="ic">process.env.VARIABLE_NAME</code>. Convert types as needed.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><strong>Step 5:</strong> When deploying, set variables in the platform's dashboard. Production script runs <code class="ic">node index.js</code> with no <code class="ic">--env-file</code>.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><strong>Step 6:</strong> Document all variables in your README and <code class="ic">.env.sample</code>.</p></div>
+  </div>
+</div>
+
+<!-- 21: Knowledge check -->
+<div class="slide slide-content" data-title="Knowledge Check">
+  <h2>Chapter 4 · Review</h2>
+  <h1>Knowledge check</h1>
+  <div class="qa-list">
+    <div class="qa-item"><div class="qa-num">Q1</div><p>What are environment variables, and why are they useful?</p></div>
+    <div class="qa-item"><div class="qa-num">Q2</div><p>What are two things you might store in an environment variable?</p></div>
+    <div class="qa-item"><div class="qa-num">Q3</div><p>How do you load a <code class="ic">.env</code> file when running a Node app?</p></div>
+    <div class="qa-item"><div class="qa-num">Q4</div><p>How do you access environment variables inside your Node.js code?</p></div>
+    <div class="qa-item"><div class="qa-num">Q5</div><p>What data type does <code class="ic">process.env</code> always give you — and why does that matter?</p></div>
+    <div class="qa-item"><div class="qa-num">Q6</div><p>Should you commit your <code class="ic">.env</code> file to GitHub? What should you do instead?</p></div>
+  </div>
+</div>
+
+<!-- 22: End -->
+<div class="slide slide-title" data-title="End of Chapter 4">
+  <div class="chapter-label">Chapter 4 · Complete</div>
+  <h1>That's Chapter 4 👋</h1>
+  <div class="accent-bar" style="background:#4ade80"></div>
+  <p class="subtitle">Next up: Introduction to Frameworks — what Express is and why we don't always build from scratch.</p>
+</div>
+
+<!-- ── BOTTOM BAR ── -->
+<div class="bottom-bar">
+  <div class="slide-counter" id="counter">1 / 22</div>
+  <div class="slide-title-label" id="slideTitle">Title</div>
+  <div class="nav-btns">
+    <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Prev</button>
+    <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+function showSlide(n) {
+  slides[current].classList.remove('active');
+  current = Math.max(0, Math.min(n, slides.length - 1));
+  slides[current].classList.add('active');
+  document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+  document.getElementById('slideTitle').textContent = slides[current].dataset.title || '';
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+}
+function navigate(dir) { showSlide(current + dir); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') navigate(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp') navigate(-1);
+});
+</script>
+</body>
+</html>

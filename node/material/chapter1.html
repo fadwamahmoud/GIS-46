@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chapter 1 – Introduction to the Back End</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #1a1a1a;
+    color: #f0f0f0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── SLIDE AREA ── */
+  .slide-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 64px;
+    overflow: hidden;
+  }
+
+  .slide {
+    display: none;
+    width: 100%;
+    max-width: 900px;
+    animation: appear 0.2s ease;
+  }
+  .slide.active { display: flex; flex-direction: column; gap: 32px; }
+
+  @keyframes appear {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SLIDE TYPES ── */
+  /* Title slide */
+  .slide-title { text-align: center; gap: 16px; align-items: center; }
+  .slide-title .chapter-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .slide-title h1 { font-size: 52px; font-weight: 700; line-height: 1.1; color: #fff; }
+  .slide-title .subtitle { font-size: 18px; color: #aaa; font-weight: 400; max-width: 540px; line-height: 1.6; }
+
+  /* Section intro */
+  .slide-section h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #5b9cf6;
+    margin-bottom: 8px;
+  }
+  .slide-section h1 { font-size: 42px; font-weight: 700; color: #fff; line-height: 1.15; }
+  .slide-section p { font-size: 18px; color: #bbb; line-height: 1.7; max-width: 680px; }
+
+  /* Content slide */
+  .slide-content h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #5b9cf6;
+  }
+  .slide-content h1 { font-size: 34px; font-weight: 700; color: #fff; line-height: 1.2; }
+
+  /* ── COMPONENTS ── */
+  .divider { height: 1px; background: #333; }
+
+  /* Two column */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .col-card {
+    background: #252525;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 24px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .col-card.blue  { border-top: 3px solid #5b9cf6; }
+  .col-card.green { border-top: 3px solid #4ade80; }
+  .col-card h3 { font-size: 20px; font-weight: 700; }
+  .col-card.blue  h3 { color: #5b9cf6; }
+  .col-card.green h3 { color: #4ade80; }
+  .col-card p { font-size: 15px; color: #bbb; line-height: 1.7; }
+
+  /* Tag row */
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    color: #ddd;
+    background: #1a1a1a;
+  }
+
+  /* Bullet list */
+  .bullet-list { display: flex; flex-direction: column; gap: 14px; }
+  .bullet-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: #252525;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 16px 20px;
+  }
+  .bullet-item .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #5b9cf6;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .bullet-item .dot.green { background: #4ade80; }
+  .bullet-item .dot.orange { background: #fb923c; }
+  .bullet-item p { font-size: 16px; color: #ddd; line-height: 1.6; }
+  .bullet-item p strong { color: #fff; }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #252525;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 28px 24px;
+    overflow-x: auto;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 90px;
+  }
+  .flow-box {
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .flow-sub { font-size: 11px; color: #888; text-align: center; max-width: 80px; line-height: 1.5; }
+  .flow-arrow {
+    font-size: 20px;
+    color: #555;
+    flex-shrink: 0;
+    padding-bottom: 20px;
+    padding: 0 4px 20px;
+  }
+  .flow-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #666;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Language grid */
+  .lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .lang-card {
+    background: #252525;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .lang-card.highlight { border-color: #4ade80; background: #1d2a1d; }
+  .lang-card .lang-name { font-size: 16px; font-weight: 700; color: #fff; }
+  .lang-card.highlight .lang-name { color: #4ade80; }
+  .lang-card .lang-desc { font-size: 13px; color: #888; line-height: 1.5; }
+  .lang-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    background: #4ade80;
+    color: #111;
+    border-radius: 3px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    width: fit-content;
+    margin-top: 4px;
+  }
+
+  /* Highlight box */
+  .highlight-box {
+    background: #1d2533;
+    border: 1px solid #3a5070;
+    border-left: 4px solid #5b9cf6;
+    border-radius: 6px;
+    padding: 20px 24px;
+  }
+  .highlight-box p { font-size: 17px; color: #ddd; line-height: 1.7; }
+  .highlight-box p strong { color: #fff; }
+
+  /* Q&A */
+  .qa-list { display: flex; flex-direction: column; gap: 12px; }
+  .qa-item {
+    background: #252525;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .qa-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #5b9cf6;
+    font-weight: 600;
+    min-width: 28px;
+    padding-top: 1px;
+  }
+  .qa-item p { font-size: 15px; color: #ddd; line-height: 1.6; }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    height: 56px;
+    background: #111;
+    border-top: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    flex-shrink: 0;
+  }
+  .slide-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #666;
+  }
+  .slide-title-label {
+    font-size: 13px;
+    color: #888;
+    font-weight: 600;
+  }
+  .nav-btns { display: flex; gap: 8px; }
+  .nav-btn {
+    background: #252525;
+    border: 1px solid #3a3a3a;
+    color: #ccc;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    padding: 7px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: #333; }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ SLIDES ═══════════════════════════ -->
+
+<!-- 1: Title -->
+<div class="slide slide-title active" data-title="Title">
+  <div class="chapter-label">Chapter 1 · Node.js for Beginners</div>
+  <h1>Introduction to<br>the Back End</h1>
+  <div class="divider" style="width:60px; height:3px; background:#5b9cf6; border-radius:2px;"></div>
+  <p class="subtitle">What happens behind the scenes when you open a website — and where Node.js fits in.</p>
+</div>
+
+<!-- 2: What is the web? -->
+<div class="slide slide-content" data-title="How a website works">
+  <h2>The Big Picture</h2>
+  <h1>Every website has two sides</h1>
+  <div class="two-col">
+    <div class="col-card blue">
+      <h3>Front End</h3>
+      <p>What the user <strong>sees and interacts with</strong> in their browser — the interface.</p>
+      <div class="tags">
+        <span class="tag">HTML</span>
+        <span class="tag">CSS</span>
+        <span class="tag">JavaScript</span>
+      </div>
+    </div>
+    <div class="col-card green">
+      <h3>Back End</h3>
+      <p>Everything that runs <strong>on the server</strong>, hidden from the user — the engine.</p>
+      <div class="tags">
+        <span class="tag">Server</span>
+        <span class="tag">App Logic</span>
+        <span class="tag">Database</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3: Front End detail -->
+<div class="slide slide-content" data-title="Front End">
+  <h2>Front End</h2>
+  <h1>The user sees this — always three languages</h1>
+  <div class="bullet-list">
+    <div class="bullet-item">
+      <div class="dot"></div>
+      <p><strong>HTML</strong> — Structure. The skeleton of every page. Headings, paragraphs, buttons.</p>
+    </div>
+    <div class="bullet-item">
+      <div class="dot"></div>
+      <p><strong>CSS</strong> — Presentation. Colors, fonts, layout, spacing.</p>
+    </div>
+    <div class="bullet-item">
+      <div class="dot"></div>
+      <p><strong>JavaScript</strong> — Behaviour. What happens when you click, type, or scroll.</p>
+    </div>
+  </div>
+  <div class="highlight-box">
+    <p>These three are <strong>fixed</strong>. Every browser in the world speaks HTML, CSS, and JavaScript — nothing else.</p>
+  </div>
+</div>
+
+<!-- 4: Back End — freedom of language -->
+<div class="slide slide-content" data-title="Back End">
+  <h2>Back End</h2>
+  <h1>The server can use almost any language</h1>
+  <div class="bullet-list">
+    <div class="bullet-item">
+      <div class="dot green"></div>
+      <p>The browser <strong>never runs</strong> your back-end code — it only sees the result.</p>
+    </div>
+    <div class="bullet-item">
+      <div class="dot green"></div>
+      <p>As long as the server sends back valid <strong>HTML, CSS, and JS</strong>, the browser is happy.</p>
+    </div>
+    <div class="bullet-item">
+      <div class="dot green"></div>
+      <p>That freedom means many different languages can power a website's back end.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 5: Languages -->
+<div class="slide slide-content" data-title="Back-end languages">
+  <h2>Back End</h2>
+  <h1>Popular back-end languages</h1>
+  <div class="lang-grid">
+    <div class="lang-card highlight">
+      <div class="lang-name">Node.js</div>
+      <div class="lang-desc">JavaScript on the server. One language, full stack.</div>
+      <div class="lang-badge">THIS COURSE</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-name">Python</div>
+      <div class="lang-desc">Very readable. Used in web &amp; data science.</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-name">Ruby</div>
+      <div class="lang-desc">Elegant syntax. Famous for Rails framework.</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-name">PHP</div>
+      <div class="lang-desc">Powers a huge chunk of the web (WordPress).</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-name">Java</div>
+      <div class="lang-desc">Enterprise scale. Not the same as JavaScript!</div>
+    </div>
+    <div class="lang-card">
+      <div class="lang-name">C#</div>
+      <div class="lang-desc">Microsoft ecosystem. Used with ASP.NET.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 6: The 3 parts of the back end -->
+<div class="slide slide-content" data-title="3 parts of the back end">
+  <h2>Back End</h2>
+  <h1>The back end has 3 main parts</h1>
+  <div class="bullet-list">
+    <div class="bullet-item">
+      <div class="dot"></div>
+      <p><strong>Server</strong> — The computer that listens for requests and sends back responses.</p>
+    </div>
+    <div class="bullet-item">
+      <div class="dot orange"></div>
+      <p><strong>Application</strong> — The code that decides what to do with each request (your Node.js app lives here).</p>
+    </div>
+    <div class="bullet-item">
+      <div class="dot green"></div>
+      <p><strong>Database</strong> — Where data is stored and retrieved (users, posts, orders, etc.).</p>
+    </div>
+  </div>
+</div>
+
+<!-- 7: Request–response cycle -->
+<div class="slide slide-content" data-title="Request–Response cycle">
+  <h2>How It All Connects</h2>
+  <h1>The request–response cycle</h1>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-box">Browser</div>
+      <div class="flow-sub">User types a URL or clicks a link</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:20px;">
+      <span class="flow-arrow">→</span>
+      <span class="flow-label">HTTP request</span>
+    </div>
+    <div class="flow-step">
+      <div class="flow-box">Server</div>
+      <div class="flow-sub">Receives and routes the request</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:20px;">
+      <span class="flow-arrow">→</span>
+      <span class="flow-label">query</span>
+    </div>
+    <div class="flow-step">
+      <div class="flow-box">Database</div>
+      <div class="flow-sub">Stores &amp; retrieves data</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:20px;">
+      <span class="flow-arrow">→</span>
+      <span class="flow-label">data</span>
+    </div>
+    <div class="flow-step">
+      <div class="flow-box">App Logic</div>
+      <div class="flow-sub">Builds the HTML response</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-bottom:20px;">
+      <span class="flow-arrow">→</span>
+      <span class="flow-label">HTTP response</span>
+    </div>
+    <div class="flow-step">
+      <div class="flow-box">Browser</div>
+      <div class="flow-sub">Renders the page for the user</div>
+    </div>
+  </div>
+</div>
+
+<!-- 8: Why Node.js -->
+<div class="slide slide-content" data-title="Why Node.js?">
+  <h2>Node.js</h2>
+  <h1>Why are we learning Node.js specifically?</h1>
+  <div class="bullet-list">
+    <div class="bullet-item">
+      <div class="dot green"></div>
+      <p><strong>You already know JavaScript.</strong> Node.js lets you use it on the server too — no new language to learn from scratch.</p>
+    </div>
+    <div class="bullet-item">
+      <div class="dot green"></div>
+      <p><strong>One language, full stack.</strong> Write the front end and the back end in the same language.</p>
+    </div>
+    <div class="bullet-item">
+      <div class="dot green"></div>
+      <p><strong>Widely used in industry.</strong> Companies like Netflix, LinkedIn, and Uber use Node.js on their servers.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 9: Knowledge check -->
+<div class="slide slide-content" data-title="Knowledge Check">
+  <h2>Chapter 1 · Review</h2>
+  <h1>Knowledge check</h1>
+  <div class="qa-list">
+    <div class="qa-item">
+      <div class="qa-num">Q1</div>
+      <p>What is back-end development?</p>
+    </div>
+    <div class="qa-item">
+      <div class="qa-num">Q2</div>
+      <p>How many main parts does the back end consist of?</p>
+    </div>
+    <div class="qa-item">
+      <div class="qa-num">Q3</div>
+      <p>What is each part of the back end called?</p>
+    </div>
+    <div class="qa-item">
+      <div class="qa-num">Q4</div>
+      <p>Where does the back end store its data?</p>
+    </div>
+  </div>
+</div>
+
+<!-- 10: End -->
+<div class="slide slide-title" data-title="End of Chapter 1">
+  <div class="chapter-label">Chapter 1 · Complete</div>
+  <h1>That's it for<br>Chapter 1 👋</h1>
+  <div class="divider" style="width:60px; height:3px; background:#4ade80; border-radius:2px;"></div>
+  <p class="subtitle">Next up: What is Node.js? — a closer look at how it works under the hood.</p>
+</div>
+
+<!-- ── BOTTOM BAR ── -->
+<div class="bottom-bar">
+  <div class="slide-counter" id="counter">1 / 10</div>
+  <div class="slide-title-label" id="slideTitle">Title</div>
+  <div class="nav-btns">
+    <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Prev</button>
+    <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+    document.getElementById('slideTitle').textContent = slides[current].dataset.title || '';
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === slides.length - 1;
+  }
+
+  function navigate(dir) { showSlide(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') navigate(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp') navigate(-1);
+  });
+</script>
+</body>
+</html>

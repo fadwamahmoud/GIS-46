@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chapter 5 – Frameworks & Express</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#1a1a1a;color:#f0f0f0;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none}
+.slide-container{flex:1;display:flex;align-items:center;justify-content:center;padding:36px 56px;overflow:hidden}
+.slide{display:none;width:100%;max-width:920px;animation:appear .2s ease}
+.slide.active{display:flex;flex-direction:column;gap:22px}
+@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* title */
+.slide-title{text-align:center;align-items:center;gap:14px}
+.chapter-label{font-family:'JetBrains Mono',monospace;font-size:12px;color:#888;letter-spacing:.12em;text-transform:uppercase}
+.slide-title h1{font-size:46px;font-weight:700;line-height:1.1;color:#fff}
+.slide-title .subtitle{font-size:17px;color:#aaa;max-width:560px;line-height:1.6}
+.accent-bar{width:60px;height:3px;border-radius:2px}
+
+/* section divider */
+.slide-section{justify-content:center;gap:12px}
+.slide-section .sec-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:#5b9cf6;border:1px solid #2a4a7a;padding:4px 12px;border-radius:3px;width:fit-content;align-self:center}
+.slide-section h1{font-size:38px;font-weight:700;color:#fff;text-align:center}
+.slide-section p{font-size:16px;color:#888;text-align:center}
+
+/* content */
+.slide-content h2{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#5b9cf6}
+.slide-content h1{font-size:30px;font-weight:700;color:#fff;line-height:1.2}
+
+/* bullets */
+.bullet-list{display:flex;flex-direction:column;gap:10px}
+.bullet-item{display:flex;align-items:flex-start;gap:14px;background:#252525;border:1px solid #333;border-radius:6px;padding:13px 17px}
+.dot{width:8px;height:8px;border-radius:50%;background:#5b9cf6;margin-top:6px;flex-shrink:0}
+.dot.g{background:#4ade80}.dot.o{background:#fb923c}.dot.p{background:#a78bfa}.dot.r{background:#f87171}
+.bullet-item p{font-size:15px;color:#ddd;line-height:1.6}
+.bullet-item p strong{color:#fff}
+.ic{font-family:'JetBrains Mono',monospace;font-size:12px;background:#111;padding:1px 6px;border-radius:3px;color:#f0c060}
+
+/* callout */
+.callout{background:#1d2533;border:1px solid #3a5070;border-left:4px solid #5b9cf6;border-radius:0 6px 6px 0;padding:14px 18px}
+.callout.g{background:#1a2a1a;border-color:#2a4a2a;border-left-color:#4ade80}
+.callout.o{background:#2a1d10;border-color:#5a3a20;border-left-color:#fb923c}
+.callout.p{background:#221d2a;border-color:#4a3a5a;border-left-color:#a78bfa}
+.callout p{font-size:14px;color:#ddd;line-height:1.7}
+.callout p strong{color:#fff}
+
+/* code */
+.code-block{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:6px;padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9;color:#ccc;overflow-x:auto}
+.code-block .fname{font-size:10px;color:#555;letter-spacing:.08em;margin-bottom:8px;display:block}
+.kw{color:#5b9cf6}.fn{color:#f0c060}.str{color:#4ade80}.cm{color:#555;font-style:italic}.num{color:#fb923c}.prop{color:#a78bfa}
+
+/* two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.col-card{background:#252525;border:1px solid #333;border-radius:8px;padding:18px 18px 20px;display:flex;flex-direction:column;gap:10px}
+.col-card.b{border-top:3px solid #5b9cf6}.col-card.g{border-top:3px solid #4ade80}.col-card.o{border-top:3px solid #fb923c}.col-card.p{border-top:3px solid #a78bfa}
+.col-card h3{font-size:16px;font-weight:700}
+.col-card.b h3{color:#5b9cf6}.col-card.g h3{color:#4ade80}.col-card.o h3{color:#fb923c}.col-card.p h3{color:#a78bfa}
+.col-card p{font-size:13px;color:#bbb;line-height:1.7}
+
+/* three col */
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* table */
+.simple-table{border:1px solid #333;border-radius:8px;overflow:hidden;width:100%}
+.table-row{display:grid;grid-template-columns:1fr 2fr}
+.table-row.w3{grid-template-columns:1fr 1fr 1fr}
+.table-row.header{background:#252525;border-bottom:1px solid #333}
+.table-row:not(.header){border-bottom:1px solid #222}
+.table-row:last-child{border-bottom:none}
+.table-cell{padding:10px 16px;font-size:13px;color:#bbb;border-right:1px solid #222;line-height:1.5}
+.table-cell:last-child{border-right:none}
+.table-row.header .table-cell{font-weight:700;color:#ddd;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.table-cell strong{color:#fff}
+.table-cell code{font-family:'JetBrains Mono',monospace;font-size:11px;background:#111;padding:1px 5px;border-radius:3px;color:#f0c060}
+
+/* request journey diagram */
+.journey{display:flex;align-items:stretch;gap:0;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden}
+.journey-step{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 12px;border-right:1px solid #1e1e1e;text-align:center}
+.journey-step:last-child{border-right:none}
+.journey-icon{font-size:22px}
+.journey-label{font-size:13px;font-weight:700;color:#fff}
+.journey-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;line-height:1.5}
+.journey-arrow{display:flex;align-items:center;justify-content:center;padding:0 2px;color:#333;font-size:18px;flex-shrink:0;align-self:center;padding-bottom:20px}
+.journey-tag{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;margin-top:2px}
+
+/* middleware chain */
+.mw-chain{display:flex;flex-direction:column;gap:8px}
+.mw-item{display:flex;align-items:center;gap:14px;background:#1a1a2a;border:1px solid #2a2a3a;border-radius:6px;padding:12px 16px}
+.mw-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:#5b9cf6;min-width:28px;font-weight:600}
+.mw-item p{font-size:14px;color:#ddd;line-height:1.5}
+.mw-item p strong{color:#fff}
+.mw-arrow{color:#2a2a4a;font-size:14px;text-align:center;padding-left:14px}
+
+/* framework grid */
+.fw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fw-card{background:#252525;border:1px solid #333;border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+.fw-card.highlight{border-color:#4ade80;background:#1a2a1a}
+.fw-name{font-size:15px;font-weight:700;color:#fff}
+.fw-card.highlight .fw-name{color:#4ade80}
+.fw-lang{font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;margin-bottom:2px}
+.fw-desc{font-size:12px;color:#888;line-height:1.5}
+.fw-badge{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;background:#4ade80;color:#111;border-radius:3px;font-weight:700;width:fit-content;margin-top:4px}
+
+/* annotation */
+.annotation{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px}
+.ann-dot{width:6px;height:6px;border-radius:50%;background:#5b9cf6;margin-top:6px;flex-shrink:0}
+.ann-dot.o{background:#fb923c}.ann-dot.g{background:#4ade80}
+.annotation p{font-size:13px;color:#999;line-height:1.6}
+.annotation p strong{color:#ddd}
+
+/* terminal */
+.terminal{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden}
+.terminal-bar{background:#1a1a1a;border-bottom:1px solid #222;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#666;display:flex;align-items:center;gap:8px}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.terminal-body{padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:2}
+.t-prompt{color:#5b9cf6}.t-cmd{color:#f0f0f0}.t-out{color:#4ade80}.t-dim{color:#555}
+
+/* qa */
+.qa-list{display:flex;flex-direction:column;gap:10px}
+.qa-item{background:#252525;border:1px solid #333;border-radius:6px;padding:13px 17px;display:flex;gap:14px;align-items:flex-start}
+.qa-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:#5b9cf6;font-weight:600;min-width:26px;padding-top:1px}
+.qa-item p{font-size:14px;color:#ddd;line-height:1.6}
+
+/* bottom bar */
+.bottom-bar{height:54px;background:#111;border-top:1px solid #2a2a2a;display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.slide-counter{font-family:'JetBrains Mono',monospace;font-size:12px;color:#666}
+.slide-title-label{font-size:13px;color:#888;font-weight:600}
+.nav-btns{display:flex;gap:8px}
+.nav-btn{background:#252525;border:1px solid #3a3a3a;color:#ccc;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;padding:6px 16px;border-radius:5px;cursor:pointer;transition:background .15s}
+.nav-btn:hover{background:#333}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ SLIDES ═══════════════════════ -->
+
+<!-- 1: Title -->
+<div class="slide slide-title active" data-title="Title">
+  <div class="chapter-label">Chapter 5 · Node.js for Beginners</div>
+  <h1>Frameworks<br>& Express</h1>
+  <div class="accent-bar" style="background:#5b9cf6"></div>
+  <p class="subtitle">What frameworks are, why we use them, and how to set up your first real web server with Express.</p>
+</div>
+
+<!-- ══════════════════ PART 1: FRAMEWORKS ══════════════════ -->
+
+<!-- 2: Section -->
+<div class="slide slide-section" data-title="— Part 1: Frameworks —">
+  <div class="sec-tag">Part 1</div>
+  <h1>Introduction to Frameworks</h1>
+  <p>What they are, what they solve, and how to choose one</p>
+</div>
+
+<!-- 3: The problem -->
+<div class="slide slide-content" data-title="The problem frameworks solve">
+  <h2>Frameworks · Dev.to</h2>
+  <h1>Every web app needs the same things</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot o"></div><p>Every time you build a new app, you'd have to write the same boilerplate again: <strong>routing, database access, user sessions, security, templating</strong>…</p></div>
+    <div class="bullet-item"><div class="dot o"></div><p>You'd also need to make hundreds of architectural decisions from scratch: how to organise files, how to handle errors, how to structure your code.</p></div>
+    <div class="bullet-item"><div class="dot o"></div><p>And if you're on a team, every developer would do things slightly differently — making the codebase hard to navigate and maintain.</p></div>
+  </div>
+  <div class="callout o">
+    <p>Frameworks exist because <strong>there's no need to reinvent the wheel</strong>. They batch up the recycled code every app needs and give it to you for free — so you can focus on the features that are actually unique to your product.</p>
+  </div>
+</div>
+
+<!-- 4: What a framework gives you -->
+<div class="slide slide-content" data-title="What a framework gives you">
+  <h2>Frameworks · MDN</h2>
+  <h1>What a web framework actually does for you</h1>
+  <div class="three-col">
+    <div class="col-card b">
+      <h3>URL Routing</h3>
+      <p>Maps incoming URLs to the right handler function. Supports URL parameters, query strings, and HTTP verbs (GET, POST, etc.).</p>
+    </div>
+    <div class="col-card g">
+      <h3>Database Access</h3>
+      <p>Provides a unified API to read and write from a database. Many use an ORM so you work with objects, not raw SQL.</p>
+    </div>
+    <div class="col-card o">
+      <h3>Templating</h3>
+      <p>Inserts dynamic data into HTML templates to generate pages on the fly.</p>
+    </div>
+    <div class="col-card p">
+      <h3>Sessions & Auth</h3>
+      <p>Manages user login, sessions, cookies and access control — without you building it from scratch.</p>
+    </div>
+    <div class="col-card b">
+      <h3>Security</h3>
+      <p>Handles common vulnerabilities: XSS, CSRF, SQL injection. Gives you safe defaults out of the box.</p>
+    </div>
+    <div class="col-card g">
+      <h3>Structure</h3>
+      <p>Forces consistent organisation (e.g. MVC). Other developers know where to find things immediately.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 5: Library vs Framework -->
+<div class="slide slide-content" data-title="Library vs Framework">
+  <h2>Frameworks · Dev.to</h2>
+  <h1>Framework vs library — what's the difference?</h1>
+  <div class="two-col">
+    <div class="col-card b">
+      <h3>Library</h3>
+      <p>A collection of functions you call when you need them. <strong>You are in control</strong> — you decide when and how to use it. You provide the overall structure yourself.</p>
+      <p style="margin-top:6px;font-size:12px;color:#666">Examples: lodash, axios, date-fns</p>
+    </div>
+    <div class="col-card g">
+      <h3>Framework</h3>
+      <p>A skeleton that <strong>calls your code</strong>. You fill in the blanks — the framework dictates the overall structure and flow. You plug into it.</p>
+      <p style="margin-top:6px;font-size:12px;color:#666">Examples: Express, Django, Rails, Laravel</p>
+    </div>
+  </div>
+  <div class="callout">
+    <p>Under the hood, frameworks are just code libraries — open source code written by other developers. The key difference is who's in charge: with a library, <strong>you call it</strong>; with a framework, <strong>it calls you</strong>.</p>
+  </div>
+</div>
+
+<!-- 6: Three categories -->
+<div class="slide slide-content" data-title="Three categories of frameworks">
+  <h2>Frameworks · Dev.to</h2>
+  <h1>Three categories of web frameworks</h1>
+  <div class="three-col">
+    <div class="col-card b">
+      <h3>Frontend (JS)</h3>
+      <p>Manage the user interface in the browser. Handle component rendering, state, and routing on the client side.</p>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #3a4a6a;padding:2px 8px;border-radius:3px;color:#7ab8e8">React</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #3a4a6a;padding:2px 8px;border-radius:3px;color:#7ab8e8">Vue</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #3a4a6a;padding:2px 8px;border-radius:3px;color:#7ab8e8">Angular</span>
+      </div>
+    </div>
+    <div class="col-card g">
+      <h3>Backend</h3>
+      <p>Run on the server. Handle requests, connect to databases, enforce business logic, send responses.</p>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #2a4a2a;padding:2px 8px;border-radius:3px;color:#6ace88">Express</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #2a4a2a;padding:2px 8px;border-radius:3px;color:#6ace88">Django</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #2a4a2a;padding:2px 8px;border-radius:3px;color:#6ace88">Rails</span>
+      </div>
+    </div>
+    <div class="col-card o">
+      <h3>CSS / UI</h3>
+      <p>Provide pre-built styles, grids, and components so your app looks professional without custom CSS.</p>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #5a3a20;padding:2px 8px;border-radius:3px;color:#d09060">Bootstrap</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #5a3a20;padding:2px 8px;border-radius:3px;color:#d09060">Tailwind</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7: Popular backend frameworks -->
+<div class="slide slide-content" data-title="Popular back-end frameworks">
+  <h2>Frameworks · MDN</h2>
+  <h1>Popular back-end frameworks</h1>
+  <div class="fw-grid">
+    <div class="fw-card highlight">
+      <div class="fw-lang">JavaScript / Node.js</div>
+      <div class="fw-name">Express</div>
+      <div class="fw-desc">Minimal and unopinionated. You add only what you need. The most popular Node framework.</div>
+      <div class="fw-badge">THIS COURSE</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-lang">Python</div>
+      <div class="fw-name">Django</div>
+      <div class="fw-desc">Full-featured and opinionated. "Batteries included" — auth, admin panel, ORM all built in.</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-lang">Python</div>
+      <div class="fw-name">Flask</div>
+      <div class="fw-desc">Lightweight and flexible. Similar philosophy to Express — minimal by default.</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-lang">Ruby</div>
+      <div class="fw-name">Rails</div>
+      <div class="fw-desc">Convention over configuration. Powers GitHub, Shopify, Airbnb, Twitch.</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-lang">PHP</div>
+      <div class="fw-name">Laravel</div>
+      <div class="fw-desc">Elegant syntax, full-featured. The dominant PHP framework.</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-lang">Java</div>
+      <div class="fw-name">Spring Boot</div>
+      <div class="fw-desc">Enterprise-grade. Production-ready Java applications.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 8: How to choose -->
+<div class="slide slide-content" data-title="How to choose a framework">
+  <h2>Frameworks · MDN</h2>
+  <h1>How do you choose a framework?</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot"></div><p><strong>Effort to learn</strong> — How steep is the learning curve? Does it have good documentation and an active community?</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><strong>Productivity</strong> — How quickly can you build something? Opinionated frameworks (Rails, Django) are often faster to start with.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><strong>Performance</strong> — Does it handle the load your app needs? Some frameworks are better suited for high-concurrency or real-time use.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><strong>Language you already know</strong> — If you know JavaScript, start with Express. There's no benefit learning a new language and a new framework at once.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p><strong>Community and ecosystem</strong> — A larger community means more packages, more answered questions on Stack Overflow, and more tutorials.</p></div>
+  </div>
+</div>
+
+<!-- ══════════════════ PART 2: EXPRESS ══════════════════ -->
+
+<!-- 9: Section -->
+<div class="slide slide-section" data-title="— Part 2: Express —">
+  <div class="sec-tag">Part 2</div>
+  <h1>Introduction to Express</h1>
+  <p>Setting up a server, handling requests, and understanding middleware</p>
+</div>
+
+<!-- 10: What is Express -->
+<div class="slide slide-content" data-title="What is Express?">
+  <h2>Express</h2>
+  <h1>What is Express?</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot g"></div><p>Express is a <strong>minimal, unopinionated web framework for Node.js</strong>. It handles the repetitive plumbing of building a server so you don't have to.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Remember the raw <span class="ic">http.createServer()</span> code from Chapter 3? Express wraps that and makes routing, responding, and extending your server <strong>far cleaner</strong>.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>It's <strong>intentionally barebones</strong> — you start with almost nothing and add only the features you need via middleware and packages.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>It's the <strong>most widely used Node.js framework</strong>. Almost every Node tutorial, job description, and project you'll encounter will use or reference it.</p></div>
+  </div>
+</div>
+
+<!-- 11: Setup -->
+<div class="slide slide-content" data-title="Setting up Express">
+  <h2>Express · Setup</h2>
+  <h1>Setting up Express from scratch</h1>
+  <div class="terminal">
+    <div class="terminal-bar"><div class="t-dot" style="background:#f87171"></div><div class="t-dot" style="background:#fbbf24"></div><div class="t-dot" style="background:#4ade80"></div><span style="margin-left:8px">terminal</span></div>
+    <div class="terminal-body">
+      <div><span class="t-dim">$ </span><span class="t-cmd">mkdir my-app && cd my-app</span></div>
+      <div><span class="t-dim">$ </span><span class="t-cmd">npm init -y</span></div>
+      <div class="t-out" style="font-size:11px">Wrote to /my-app/package.json</div>
+      <div><span class="t-dim">$ </span><span class="t-cmd">npm install express</span></div>
+      <div class="t-out" style="font-size:11px">added 65 packages in 1.2s</div>
+    </div>
+  </div>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot"></div><p><span class="ic">npm init -y</span> creates a <span class="ic">package.json</span> with sensible defaults. The <span class="ic">-y</span> skips all the prompts.</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><span class="ic">npm install express</span> downloads Express and saves it to your <span class="ic">dependencies</span>. A <span class="ic">node_modules/</span> folder is created automatically.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>Now create an <span class="ic">app.js</span> file in the project root — that's where your server code lives.</p></div>
+  </div>
+</div>
+
+<!-- 12: Hello World server -->
+<div class="slide slide-content" data-title="Your first Express server">
+  <h2>Express · Setup</h2>
+  <h1>Your first Express server</h1>
+  <div class="code-block"><span class="cm">// app.js</span>
+<span class="kw">const</span> express = <span class="fn">require</span>(<span class="str">"express"</span>);
+<span class="kw">const</span> app = <span class="fn">express</span>();
+
+app.<span class="fn">get</span>(<span class="str">"/"</span>, (req, res) => res.<span class="fn">send</span>(<span class="str">"Hello, world!"</span>));
+
+<span class="kw">const</span> PORT = <span class="prop">process</span>.<span class="prop">env</span>.<span class="prop">PORT</span> || <span class="num">3000</span>;
+app.<span class="fn">listen</span>(PORT, (error) => {
+  <span class="kw">if</span> (error) <span class="kw">throw</span> error;
+  console.<span class="fn">log</span>(<span class="str">`Listening on port ${PORT}!`</span>);
+});</div>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot"></div><p><span class="ic">require("express")</span> imports the framework, then we <strong>call it as a function</strong> to create our app object.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p><span class="ic">app.get("/",...)</span> registers a <strong>route</strong> — "when a GET request arrives at <span class="ic">/</span>, run this function".</p></div>
+    <div class="bullet-item"><div class="dot"></div><p><span class="ic">app.listen(PORT, ...)</span> starts the server. The <span class="ic">if (error) throw error</span> is important — without it, startup errors fail silently.</p></div>
+  </div>
+</div>
+
+<!-- 13: Running it -->
+<div class="slide slide-content" data-title="Running the server">
+  <h2>Express · Setup</h2>
+  <h1>Running your Express server</h1>
+  <div class="terminal">
+    <div class="terminal-bar"><div class="t-dot" style="background:#f87171"></div><div class="t-dot" style="background:#fbbf24"></div><div class="t-dot" style="background:#4ade80"></div><span style="margin-left:8px">terminal</span></div>
+    <div class="terminal-body">
+      <div><span class="t-dim">$ </span><span class="t-cmd">node app.js</span></div>
+      <div class="t-out">Listening on port 3000!</div>
+      <div style="margin-top:12px"><span class="t-dim"># Or with auto-restart on file changes:</span></div>
+      <div><span class="t-dim">$ </span><span class="t-cmd">node --watch app.js</span></div>
+      <div class="t-out">Listening on port 3000!</div>
+    </div>
+  </div>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot g"></div><p>Open a browser and visit <span class="ic">http://localhost:3000/</span> — you should see <strong>Hello, world!</strong></p></div>
+    <div class="bullet-item"><div class="dot p"></div><p>The <span class="ic">--watch</span> flag (built into Node) <strong>auto-restarts</strong> the server when you save any file. No more manually stopping and restarting after every change.</p></div>
+    <div class="bullet-item"><div class="dot p"></div><p>You may also see <span class="ic">nodemon</span> used for this in older tutorials — it does the same thing. Stick with <span class="ic">--watch</span> for new projects.</p></div>
+  </div>
+</div>
+
+<!-- 14: A request's journey -->
+<div class="slide slide-content" data-title="A request's journey">
+  <h2>Express · How Requests Work</h2>
+  <h1>What happens when a request arrives</h1>
+  <div class="journey">
+    <div class="journey-step">
+      <div class="journey-icon">🌐</div>
+      <div class="journey-label">Browser</div>
+      <div class="journey-sub">Navigates to localhost:3000/</div>
+      <div class="journey-tag" style="background:#1d2533;color:#5b9cf6;border:1px solid #2a4a6a;font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px">GET /</div>
+    </div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-step">
+      <div class="journey-icon">📦</div>
+      <div class="journey-label">Express</div>
+      <div class="journey-sub">Stores request as req object</div>
+    </div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-step">
+      <div class="journey-icon">🔀</div>
+      <div class="journey-label">Router</div>
+      <div class="journey-sub">Matches GET + "/" to a route</div>
+    </div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-step">
+      <div class="journey-icon">⚙️</div>
+      <div class="journey-label">Middleware</div>
+      <div class="journey-sub">Chain of functions runs</div>
+    </div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-step">
+      <div class="journey-icon">📤</div>
+      <div class="journey-label">Response</div>
+      <div class="journey-sub">res.send() ends the cycle</div>
+      <div class="journey-tag" style="background:#1d2a1d;color:#4ade80;border:1px solid #2a4a2a;font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px">200 OK</div>
+    </div>
+  </div>
+  <div class="callout g">
+    <p>When Express receives the request, it finds the <strong>first route that matches both the HTTP verb and the path</strong>. Order matters — routes are checked top to bottom.</p>
+  </div>
+</div>
+
+<!-- 15: req and res in Express -->
+<div class="slide slide-content" data-title="req and res in Express">
+  <h2>Express · Request & Response</h2>
+  <h1>The req and res objects</h1>
+  <div class="two-col">
+    <div class="col-card b">
+      <h3>req — request object</h3>
+      <p>Everything about the incoming request. Express parses it and stores it here.</p>
+      <div class="code-block" style="font-size:11.5px;padding:10px 14px;margin-top:4px">req.<span class="prop">method</span>   <span class="cm">// 'GET', 'POST'</span>
+req.<span class="prop">path</span>     <span class="cm">// '/about'</span>
+req.<span class="prop">params</span>   <span class="cm">// URL params</span>
+req.<span class="prop">query</span>    <span class="cm">// ?key=value</span>
+req.<span class="prop">body</span>     <span class="cm">// POST body</span>
+req.<span class="prop">headers</span>  <span class="cm">// HTTP headers</span></div>
+    </div>
+    <div class="col-card g">
+      <h3>res — response object</h3>
+      <p>How you send data back to the browser. Always call one of these to end the cycle.</p>
+      <div class="code-block" style="font-size:11.5px;padding:10px 14px;margin-top:4px">res.<span class="fn">send</span>(<span class="str">'text'</span>)     <span class="cm">// send string</span>
+res.<span class="fn">json</span>({})      <span class="cm">// send JSON</span>
+res.<span class="fn">sendFile</span>(path) <span class="cm">// send a file</span>
+res.<span class="fn">redirect</span>(<span class="str">'/x'</span>) <span class="cm">// redirect</span>
+res.<span class="fn">status</span>(<span class="num">404</span>)   <span class="cm">// set status code</span>
+  .<span class="fn">send</span>(<span class="str">'Not found'</span>)</div>
+    </div>
+  </div>
+</div>
+
+<!-- 16: What is middleware -->
+<div class="slide slide-content" data-title="What is middleware?">
+  <h2>Express · Middleware</h2>
+  <h1>What is a middleware function?</h1>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot p"></div><p>A middleware function is any function that receives <span class="ic">req</span>, <span class="ic">res</span>, and a third argument <span class="ic">next</span>. It can inspect or modify the request, then either <strong>respond</strong> or call <strong>next()</strong> to pass it along.</p></div>
+    <div class="bullet-item"><div class="dot p"></div><p>In Express, every request passes through a <strong>chain of middleware functions</strong> one by one until something responds.</p></div>
+    <div class="bullet-item"><div class="dot p"></div><p>Your route handlers (<span class="ic">app.get(...)</span>) are themselves middleware — they just happen to be the last in the chain for a given route.</p></div>
+  </div>
+  <div class="code-block"><span class="cm">// A simple middleware function</span>
+<span class="kw">function</span> <span class="fn">logger</span>(req, res, <span class="fn">next</span>) {
+  console.<span class="fn">log</span>(<span class="str">`${req.method} ${req.path}`</span>);
+  <span class="fn">next</span>(); <span class="cm">// pass to the next function in the chain</span>
+}
+
+app.<span class="fn">use</span>(logger); <span class="cm">// apply to all routes</span></div>
+</div>
+
+<!-- 17: Middleware chain -->
+<div class="slide slide-content" data-title="The middleware chain">
+  <h2>Express · Middleware</h2>
+  <h1>The middleware chain in action</h1>
+  <div class="mw-chain">
+    <div class="mw-item">
+      <div class="mw-num">1</div>
+      <p><strong>Request arrives</strong> — Express creates req and res objects and starts the chain.</p>
+    </div>
+    <div class="mw-arrow">↓</div>
+    <div class="mw-item">
+      <div class="mw-num">2</div>
+      <p><strong>Global middleware</strong> (e.g. logger, body parser, auth check) — runs on every request. Calls <span class="ic">next()</span> to continue.</p>
+    </div>
+    <div class="mw-arrow">↓</div>
+    <div class="mw-item">
+      <div class="mw-num">3</div>
+      <p><strong>Route matching</strong> — Express finds the first route whose verb and path match the request.</p>
+    </div>
+    <div class="mw-arrow">↓</div>
+    <div class="mw-item">
+      <div class="mw-num">4</div>
+      <p><strong>Route handler</strong> — your function runs. It calls <span class="ic">res.send()</span>, <span class="ic">res.json()</span>, etc. to <strong>end the cycle</strong>.</p>
+    </div>
+  </div>
+  <div class="annotation"><div class="ann-dot o"></div><p><strong>If no route matches</strong>, Express falls through to the end. Always add a catch-all or error handler to return a proper 404 rather than leaving the browser hanging.</p></div>
+</div>
+
+<!-- 18: Multiple routes -->
+<div class="slide slide-content" data-title="Multiple routes">
+  <h2>Express · Routing</h2>
+  <h1>Adding multiple routes</h1>
+  <div class="code-block"><span class="kw">const</span> express = <span class="fn">require</span>(<span class="str">"express"</span>);
+<span class="kw">const</span> app = <span class="fn">express</span>();
+
+app.<span class="fn">get</span>(<span class="str">"/"</span>, (req, res) => {
+  res.<span class="fn">send</span>(<span class="str">"&lt;h1&gt;Home&lt;/h1&gt;"</span>);
+});
+
+app.<span class="fn">get</span>(<span class="str">"/about"</span>, (req, res) => {
+  res.<span class="fn">send</span>(<span class="str">"&lt;h1&gt;About&lt;/h1&gt;"</span>);
+});
+
+app.<span class="fn">get</span>(<span class="str">"*"</span>, (req, res) => {
+  res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">send</span>(<span class="str">"&lt;h1&gt;404 – Not Found&lt;/h1&gt;"</span>);
+});
+
+app.<span class="fn">listen</span>(<span class="num">3000</span>);</div>
+  <div class="annotation"><div class="ann-dot g"></div><p><strong>"*"</strong> is a wildcard — it matches any path. Put it last so it only catches requests that didn't match any earlier route. This is your 404 handler.</p></div>
+</div>
+
+<!-- 19: PORT from env var -->
+<div class="slide slide-content" data-title="PORT from environment variable">
+  <h2>Express · Best Practice</h2>
+  <h1>Always get PORT from an environment variable</h1>
+  <div class="two-col">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#f87171;margin-bottom:6px;letter-spacing:.08em">Avoid — hardcoded port</div>
+      <div class="code-block"><span class="kw">const</span> PORT = <span class="num">3000</span>;
+app.<span class="fn">listen</span>(PORT);</div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#4ade80;margin-bottom:6px;letter-spacing:.08em">Prefer — env var with fallback</div>
+      <div class="code-block"><span class="kw">const</span> PORT =
+  <span class="prop">process</span>.<span class="prop">env</span>.<span class="prop">PORT</span> || <span class="num">3000</span>;
+app.<span class="fn">listen</span>(PORT);</div>
+    </div>
+  </div>
+  <div class="bullet-list">
+    <div class="bullet-item"><div class="dot g"></div><p>If <span class="ic">process.env.PORT</span> is set (by a deployment platform like Heroku or Railway), the app uses that. Otherwise it falls back to <span class="ic">3000</span> locally.</p></div>
+    <div class="bullet-item"><div class="dot g"></div><p>This way you can change the port <strong>without touching source code</strong> — just change the environment variable.</p></div>
+  </div>
+</div>
+
+<!-- 20: Raw Node vs Express -->
+<div class="slide slide-content" data-title="Raw Node vs Express">
+  <h2>Express · Why It Matters</h2>
+  <h1>Raw Node vs Express — same result, very different code</h1>
+  <div class="two-col">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;margin-bottom:6px;letter-spacing:.08em">Raw Node http module</div>
+      <div class="code-block" style="font-size:11.5px"><span class="kw">const</span> http = <span class="fn">require</span>(<span class="str">'http'</span>);
+http.<span class="fn">createServer</span>((req, res) => {
+  res.<span class="fn">writeHead</span>(<span class="num">200</span>, {
+    <span class="str">'Content-Type'</span>:<span class="str">'text/html'</span>
+  });
+  <span class="kw">if</span>(req.<span class="prop">url</span> === <span class="str">'/'</span>){
+    res.<span class="fn">end</span>(<span class="str">'Home'</span>);
+  } <span class="kw">else if</span>(req.<span class="prop">url</span> === <span class="str">'/about'</span>){
+    res.<span class="fn">end</span>(<span class="str">'About'</span>);
+  } <span class="kw">else</span> {
+    res.<span class="fn">writeHead</span>(<span class="num">404</span>);
+    res.<span class="fn">end</span>(<span class="str">'Not found'</span>);
+  }
+}).<span class="fn">listen</span>(<span class="num">3000</span>);</div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;margin-bottom:6px;letter-spacing:.08em">Express</div>
+      <div class="code-block" style="font-size:11.5px"><span class="kw">const</span> express = <span class="fn">require</span>(<span class="str">'express'</span>);
+<span class="kw">const</span> app = <span class="fn">express</span>();
+
+app.<span class="fn">get</span>(<span class="str">'/'</span>, (req, res) =>
+  res.<span class="fn">send</span>(<span class="str">'Home'</span>)
+);
+app.<span class="fn">get</span>(<span class="str">'/about'</span>, (req, res) =>
+  res.<span class="fn">send</span>(<span class="str">'About'</span>)
+);
+app.<span class="fn">get</span>(<span class="str">'*'</span>, (req, res) =>
+  res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">send</span>(<span class="str">'Not found'</span>)
+);
+
+app.<span class="fn">listen</span>(<span class="num">3000</span>);</div>
+    </div>
+  </div>
+</div>
+
+<!-- 21: Knowledge check -->
+<div class="slide slide-content" data-title="Knowledge Check">
+  <h2>Chapter 5 · Review</h2>
+  <h1>Knowledge check</h1>
+  <div class="qa-list">
+    <div class="qa-item"><div class="qa-num">Q1</div><p>What problem do frameworks solve? Why not just write everything from scratch?</p></div>
+    <div class="qa-item"><div class="qa-num">Q2</div><p>What is the difference between a framework and a library?</p></div>
+    <div class="qa-item"><div class="qa-num">Q3</div><p>Name two popular back-end frameworks other than Express and the language they're written in.</p></div>
+    <div class="qa-item"><div class="qa-num">Q4</div><p>What is Express? How would you describe it in one sentence?</p></div>
+    <div class="qa-item"><div class="qa-num">Q5</div><p>What happens step by step when a browser sends a request to an Express server?</p></div>
+    <div class="qa-item"><div class="qa-num">Q6</div><p>What is a middleware function and what are the three arguments it receives?</p></div>
+    <div class="qa-item"><div class="qa-num">Q7</div><p>How do you automatically restart the server when a file changes?</p></div>
+  </div>
+</div>
+
+<!-- 22: End -->
+<div class="slide slide-title" data-title="End of Chapter 5">
+  <div class="chapter-label">Chapter 5 · Complete</div>
+  <h1>That's Chapter 5 👋</h1>
+  <div class="accent-bar" style="background:#4ade80"></div>
+  <p class="subtitle">Next up: Routes — organising your Express app's URL structure as it grows.</p>
+</div>
+
+<!-- ── BOTTOM BAR ── -->
+<div class="bottom-bar">
+  <div class="slide-counter" id="counter">1 / 22</div>
+  <div class="slide-title-label" id="slideTitle">Title</div>
+  <div class="nav-btns">
+    <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Prev</button>
+    <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+function showSlide(n) {
+  slides[current].classList.remove('active');
+  current = Math.max(0, Math.min(n, slides.length - 1));
+  slides[current].classList.add('active');
+  document.getElementById('counter').textContent = `${current + 1} / ${slides.length}`;
+  document.getElementById('slideTitle').textContent = slides[current].dataset.title || '';
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === slides.length - 1;
+}
+function navigate(dir) { showSlide(current + dir); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') navigate(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp') navigate(-1);
+});
+</script>
+</body>
+</html>
