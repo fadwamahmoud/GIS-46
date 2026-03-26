@@ -1,10 +1,13 @@
 import { Router } from "express";
-
+import { getAuthorByIdController } from "../controllers/authorController.js";
 const authorRouter = Router();
 
-// use it similar to app
+// applied => /:authorId + put
+authorRouter.put("/:authorId", getAuthorByIdController);
 
-authorRouter.get("/", (req, res) => res.send("All authors"));
+authorRouter.get("/", (req, res) => {
+  res.send("All authors");
+});
 
 authorRouter.get(
   "/:authorId",
@@ -33,6 +36,8 @@ authorRouter.get(
     res.status(207).send("ok");
   },
 );
+// /author
+// /author/:authorId
 authorRouter.post("/:authorId", (req, res) => {
   const author = req.body;
   // author => db

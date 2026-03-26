@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MVC in a MERN App — Beginner Slides</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1e293b;
+      --card-2: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --accent-3: #f59e0b;
+      --danger: #fb7185;
+      --shadow: 0 16px 40px rgba(0,0,0,.28);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1d4ed8 0%, #0f172a 32%, #020617 100%);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .deck {
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: 56px 72px 96px;
+      gap: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    }
+
+    .slide.active {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1, h2 {
+      margin: 0;
+      line-height: 1.05;
+      letter-spacing: -.03em;
+    }
+
+    h1 { font-size: clamp(2.6rem, 6vw, 5rem); }
+    h2 { font-size: clamp(2rem, 4.8vw, 3.7rem); }
+
+    p, li {
+      font-size: clamp(1.05rem, 2vw, 1.45rem);
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .muted { color: var(--muted); }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 28px;
+      align-items: center;
+      min-height: 0;
+    }
+
+    .content.single {
+      grid-template-columns: 1fr;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, .78);
+      border: 1px solid rgba(148, 163, 184, .18);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px 28px;
+    }
+
+    .stack { display: grid; gap: 18px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    ul { margin: 0; padding-left: 1.2em; }
+    li + li { margin-top: 10px; }
+
+    .tag {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, .12);
+      color: #bae6fd;
+      font-size: .95rem;
+      font-weight: 700;
+      margin-right: 8px;
+      margin-bottom: 10px;
+    }
+
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .node {
+      background: linear-gradient(180deg, rgba(30,41,59,.95), rgba(15,23,42,.95));
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: 20px;
+      padding: 18px 20px;
+      min-width: 140px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .node.react { border-color: rgba(56, 189, 248, .4); }
+    .node.controller { border-color: rgba(34, 197, 94, .4); }
+    .node.model { border-color: rgba(245, 158, 11, .4); }
+    .node.route { border-color: rgba(244, 114, 182, .4); }
+    .node.response { border-color: rgba(99, 102, 241, .4); }
+
+    .arrow {
+      font-size: 1.8rem;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .code {
+      background: #020617;
+      color: #e2e8f0;
+      border-radius: 18px;
+      padding: 20px 22px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 1rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      border: 1px solid rgba(148,163,184,.16);
+      overflow: auto;
+    }
+
+    .big-center {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      gap: 22px;
+      padding: 24px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .pill {
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.1);
+      font-weight: 700;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    .controls {
+      position: fixed;
+      right: 20px;
+      bottom: 18px;
+      display: flex;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 12px 16px;
+      background: rgba(15,23,42,.9);
+      color: white;
+      box-shadow: var(--shadow);
+      font-weight: 700;
+      border: 1px solid rgba(148,163,184,.16);
+    }
+
+    .mini {
+      font-size: .94rem;
+      color: var(--muted);
+    }
+
+    .diagram {
+      display: grid;
+      gap: 14px;
+    }
+
+    .lane {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .lane .label {
+      font-weight: 800;
+      color: #cbd5e1;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      text-align: center;
+    }
+
+    .lane .bar {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(15,23,42,.7);
+      border: 1px solid rgba(148,163,184,.16);
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .compare .bad { border-left: 5px solid var(--danger); }
+    .compare .good { border-left: 5px solid var(--accent-2); }
+
+    @media (max-width: 900px) {
+      .slide { padding: 28px 20px 88px; }
+      .content, .two-col, .compare, .lane { grid-template-columns: 1fr; }
+      .footer { gap: 12px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <section class="slide active">
+      <header>
+        <div class="eyebrow">Beginner Visual Aid</div>
+        <h1>MVC in a MERN App</h1>
+      </header>
+      <div class="content single">
+        <div class="card big-center">
+          <p class="muted">How Model–View–Controller works when your frontend is React and your backend is Node + Express + MongoDB.</p>
+          <div class="flow" style="justify-content:center;">
+            <div class="node react">React UI</div>
+            <div class="arrow">→</div>
+            <div class="node route">Route</div>
+            <div class="arrow">→</div>
+            <div class="node controller">Controller</div>
+            <div class="arrow">→</div>
+            <div class="node model">Model / DB</div>
+            <div class="arrow">→</div>
+            <div class="node response">JSON Response</div>
+          </div>
+          <div class="pill-row">
+            <div class="pill">MongoDB</div>
+            <div class="pill">Express</div>
+            <div class="pill">React</div>
+            <div class="pill">Node.js</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <div>Use ← → or the buttons to move through the slides.</div>
+        <div>1 / 10</div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">Big Picture</div>
+        <h2>What does MVC mean?</h2>
+      </header>
+      <div class="content">
+        <div class="stack">
+          <div class="card">
+            <span class="tag">Model</span>
+            <p>Represents your data and how you store or fetch it.</p>
+          </div>
+          <div class="card">
+            <span class="tag">View</span>
+            <p>What the user sees and interacts with.</p>
+          </div>
+          <div class="card">
+            <span class="tag">Controller</span>
+            <p>The logic that receives a request, decides what to do, and sends a response.</p>
+          </div>
+        </div>
+        <div class="card">
+          <p><strong>In a traditional app:</strong></p>
+          <div class="flow">
+            <div class="node">User</div>
+            <div class="arrow">→</div>
+            <div class="node controller">Controller</div>
+            <div class="arrow">→</div>
+            <div class="node model">Model</div>
+            <div class="arrow">→</div>
+            <div class="node">View</div>
+          </div>
+          <p class="muted" style="margin-top:16px;">In MERN, React is usually a separate frontend app, so MVC is most obvious on the backend.</p>
+        </div>
+      </div>
+      <div class="footer"><div>MVC is about separation of responsibilities.</div><div>2 / 10</div></div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">MERN Mapping</div>
+        <h2>How MVC maps to MERN</h2>
+      </header>
+      <div class="content">
+        <div class="card stack">
+          <div>
+            <p><strong>View = React</strong><br><span class="mini">Shows pages, forms, buttons, lists, and app state.</span></p>
+          </div>
+          <div>
+            <p><strong>Controller = Express handler</strong><br><span class="mini">Reads the request, runs logic, calls the model, returns JSON.</span></p>
+          </div>
+          <div>
+            <p><strong>Model = MongoDB + Mongoose</strong><br><span class="mini">Defines the shape of data and talks to the database.</span></p>
+          </div>
+        </div>
+        <div class="card diagram">
+          <div class="lane">
+            <div class="label">React</div>
+            <div class="bar">User clicks a button or submits a form.</div>
+          </div>
+          <div class="lane">
+            <div class="label">Route</div>
+            <div class="bar">Express matches a URL like <code>POST /api/books</code>.</div>
+          </div>
+          <div class="lane">
+            <div class="label">Controller</div>
+            <div class="bar">Validates input, decides what to do, calls the model.</div>
+          </div>
+          <div class="lane">
+            <div class="label">Model</div>
+            <div class="bar">Reads or writes MongoDB data.</div>
+          </div>
+          <div class="lane">
+            <div class="label">Response</div>
+            <div class="bar">JSON goes back to React, and React updates the screen.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><div>React is your user-facing layer; Express/Mongoose form the MVC backend.</div><div>3 / 10</div></div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">Request Flow</div>
+        <h2>The full journey of one action</h2>
+      </header>
+      <div class="content single">
+        <div class="card big-center">
+          <div class="flow" style="justify-content:center; row-gap:18px;">
+            <div class="node react">1. User clicks “Add Book”</div>
+            <div class="arrow">→</div>
+            <div class="node react">2. React sends fetch/axios request</div>
+            <div class="arrow">→</div>
+            <div class="node route">3. Express route matches URL</div>
+            <div class="arrow">→</div>
+            <div class="node controller">4. Controller runs business logic</div>
+            <div class="arrow">→</div>
+            <div class="node model">5. Model saves/fetches data</div>
+            <div class="arrow">→</div>
+            <div class="node response">6. JSON response returns</div>
+            <div class="arrow">→</div>
+            <div class="node react">7. React re-renders UI</div>
+          </div>
+          <p class="muted">This is why MERN apps often feel like “React talks to an API.”</p>
+        </div>
+      </div>
+      <div class="footer"><div>One user action can trigger the whole chain.</div><div>4 / 10</div></div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">Code Roles</div>
+        <h2>What belongs where?</h2>
+      </header>
+      <div class="content">
+        <div class="card">
+          <p><strong>Route</strong></p>
+          <p class="muted">Chooses which controller handles a URL.</p>
+          <div class="code">router.post('/books', createBook)</div>
+        </div>
+        <div class="card">
+          <p><strong>Controller</strong></p>
+          <p class="muted">Reads request data and decides the next step.</p>
+          <div class="code">async function createBook(req, res) {
+  const book = await Book.create({ title: req.body.title })
+  res.status(201).json(book)
+}</div>
+        </div>
+        <div class="card">
+          <p><strong>Model</strong></p>
+          <p class="muted">Defines your data structure.</p>
+          <div class="code">const bookSchema = new mongoose.Schema({
+  title: String
+})</div>
+        </div>
+        <div class="card">
+          <p><strong>React View</strong></p>
+          <p class="muted">Collects input and displays returned data.</p>
+          <div class="code">await fetch('/api/books', {
+  method: 'POST',
+  body: JSON.stringify({ title: 'The Hobbit' })
+})</div>
+        </div>
+      </div>
+      <div class="footer"><div>Routes connect, controllers decide, models store, React displays.</div><div>5 / 10</div></div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">Simple Example</div>
+        <h2>Create a book in a MERN app</h2>
+      </header>
+      <div class="content">
+        <div class="stack">
+          <div class="card">
+            <p><strong>React:</strong> User submits a form.</p>
+          </div>
+          <div class="card">
+            <p><strong>Route:</strong> <code>POST /api/books</code></p>
+          </div>
+          <div class="card">
+            <p><strong>Controller:</strong> Creates the new book.</p>
+          </div>
+          <div class="card">
+            <p><strong>Model:</strong> Inserts the document into MongoDB.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="code">// controller
+async function createBook(req, res) {
+  try {
+    const book = await Book.create({
+      title: req.body.title,
+      author: req.body.author,
+    })
+
+    res.status(201).json(book)
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create book' })
+  }
+}</div>
+          <p class="muted" style="margin-top:12px;">The controller is the “brain” for this request.</p>
+        </div>
+      </div>
+      <div class="footer"><div>Controllers usually contain request-specific logic.</div><div>6 / 10</div></div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">Why MVC helps</div>
+        <h2>Without MVC vs with MVC</h2>
+      </header>
+      <div class="content single">
+        <div class="compare">
+          <div class="card bad">
+            <p><strong>Without MVC</strong></p>
+            <ul>
+              <li>Routes get crowded with database code.</li>
+              <li>Validation, business logic, and responses mix together.</li>
+              <li>Harder to test and reuse code.</li>
+            </ul>
+          </div>
+          <div class="card good">
+            <p><strong>With MVC</strong></p>
+            <ul>
+              <li>Each file has a clear job.</li>
+              <li>Controllers are easier to reason about.</li>
+              <li>Models stay focused on data.</li>
+              <li>The app grows more cleanly.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><div>MVC is mainly an organization pattern.</div><div>7 / 10</div></div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">Important Reality</div>
+        <h2>MERN is often not “pure MVC”</h2>
+      </header>
+      <div class="content">
+        <div class="card">
+          <p>In real MERN apps, the backend often looks more like:</p>
+          <div class="flow" style="margin-top:16px;">
+            <div class="node route">Routes</div>
+            <div class="arrow">→</div>
+            <div class="node">Middleware</div>
+            <div class="arrow">→</div>
+            <div class="node controller">Controllers</div>
+            <div class="arrow">→</div>
+            <div class="node">Services</div>
+            <div class="arrow">→</div>
+            <div class="node model">Models</div>
+          </div>
+        </div>
+        <div class="card">
+          <ul>
+            <li><strong>Middleware</strong> can handle auth, validation, logging, or errors.</li>
+            <li><strong>Services</strong> can hold reusable business logic.</li>
+            <li>This is still fine. MVC is a guiding structure, not a strict law.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer"><div>Most production apps evolve beyond the smallest MVC example.</div><div>8 / 10</div></div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">Project Structure</div>
+        <h2>A common MERN folder layout</h2>
+      </header>
+      <div class="content">
+        <div class="card">
+          <div class="code">backend/
+  controllers/
+    bookController.js
+  models/
+    Book.js
+  routes/
+    bookRoutes.js
+  server.js
+
+frontend/
+  src/
+    components/
+    pages/
+    api/
+    App.jsx</div>
+        </div>
+        <div class="card stack">
+          <p><strong>Backend:</strong> Handles API requests and database access.</p>
+          <p><strong>Frontend:</strong> Handles UI, state, and user interaction.</p>
+          <p class="muted">This separation is why people say MERN apps are often a React frontend + Node API backend.</p>
+        </div>
+      </div>
+      <div class="footer"><div>Folder structure should reflect responsibilities.</div><div>9 / 10</div></div>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="eyebrow">Wrap-Up</div>
+        <h2>The beginner mental model</h2>
+      </header>
+      <div class="content single">
+        <div class="card big-center">
+          <div class="pill-row">
+            <div class="pill">React = View</div>
+            <div class="pill">Express handlers = Controllers</div>
+            <div class="pill">MongoDB / Mongoose = Models</div>
+          </div>
+          <p><strong>One-line summary:</strong><br>In a MERN app, the user interacts with React, React sends requests to the backend, controllers handle those requests, models talk to MongoDB, and the backend sends JSON back for React to display.</p>
+          <p class="muted">That is MVC in MERN, in the simplest beginner-friendly form.</p>
+        </div>
+      </div>
+      <div class="footer"><div>Based on the MVC/controller lesson and adapted to MERN. Keyboard: ← →, Home, End.</div><div>10 / 10</div></div>
+    </section>
+  </div>
+
+  <div class="controls">
+    <button id="prevBtn">← Prev</button>
+    <button id="nextBtn">Next →</button>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    let current = 0;
+
+    function showSlide(index) {
+      current = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => showSlide(current - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => showSlide(current + 1));
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') showSlide(current + 1);
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') showSlide(current - 1);
+      if (e.key === 'Home') showSlide(0);
+      if (e.key === 'End') showSlide(slides.length - 1);
+    });
+  </script>
+</body>
+</html>

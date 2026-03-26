@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Express Controllers, Responses, and Middleware — Slides
+    </title>
+    <style>
+      :root {
+        --bg: #020617;
+        --panel: rgba(15, 23, 42, 0.82);
+        --panel-2: rgba(30, 41, 59, 0.82);
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --green: #22c55e;
+        --amber: #f59e0b;
+        --pink: #f472b6;
+        --red: #fb7185;
+        --purple: #818cf8;
+        --border: rgba(148, 163, 184, 0.18);
+        --shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+        --radius: 24px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        color: var(--text);
+        background: radial-gradient(
+          circle at top left,
+          #1d4ed8 0%,
+          #0f172a 35%,
+          #020617 100%
+        );
+      }
+
+      .deck {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: none;
+        padding: 52px 64px 90px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.03),
+          rgba(255, 255, 255, 0.01)
+        );
+      }
+
+      .slide.active {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 24px;
+      }
+
+      .eyebrow {
+        font-size: 14px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-weight: 800;
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      h1 {
+        font-size: clamp(2.6rem, 6vw, 5rem);
+      }
+      h2 {
+        font-size: clamp(2rem, 4.8vw, 3.5rem);
+      }
+
+      p,
+      li {
+        font-size: clamp(1.04rem, 1.8vw, 1.35rem);
+        line-height: 1.58;
+        margin: 0;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 24px;
+        min-height: 0;
+        align-items: center;
+      }
+
+      .content.single {
+        grid-template-columns: 1fr;
+      }
+      .content.three {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        border-radius: var(--radius);
+        padding: 24px 26px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 18px;
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .three {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      ul {
+        margin: 0;
+        padding-left: 1.2em;
+      }
+      li + li {
+        margin-top: 10px;
+      }
+
+      .flow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .node {
+        min-width: 128px;
+        text-align: center;
+        padding: 18px 20px;
+        border-radius: 18px;
+        background: linear-gradient(
+          180deg,
+          rgba(30, 41, 59, 0.95),
+          rgba(15, 23, 42, 0.95)
+        );
+        border: 1px solid var(--border);
+        font-weight: 800;
+        box-shadow: var(--shadow);
+      }
+
+      .node.controller {
+        border-color: rgba(56, 189, 248, 0.45);
+      }
+      .node.model {
+        border-color: rgba(34, 197, 94, 0.45);
+      }
+      .node.view {
+        border-color: rgba(129, 140, 248, 0.45);
+      }
+      .node.route {
+        border-color: rgba(244, 114, 182, 0.45);
+      }
+      .node.error {
+        border-color: rgba(251, 113, 133, 0.45);
+      }
+      .node.middleware {
+        border-color: rgba(245, 158, 11, 0.45);
+      }
+
+      .arrow {
+        font-size: 1.7rem;
+        color: var(--muted);
+        font-weight: 900;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.12);
+        color: #bae6fd;
+        font-weight: 700;
+        font-size: 0.92rem;
+        margin-bottom: 12px;
+      }
+
+      .tag.green {
+        background: rgba(34, 197, 94, 0.12);
+        color: #bbf7d0;
+      }
+      .tag.amber {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fde68a;
+      }
+      .tag.pink {
+        background: rgba(244, 114, 182, 0.12);
+        color: #fbcfe8;
+      }
+      .tag.red {
+        background: rgba(251, 113, 133, 0.12);
+        color: #fecdd3;
+      }
+      .tag.purple {
+        background: rgba(129, 140, 248, 0.12);
+        color: #c7d2fe;
+      }
+
+      .code {
+        background: #020617;
+        color: #e2e8f0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        padding: 16px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        white-space: pre;
+        overflow-x: auto;
+      }
+
+      .center {
+        display: grid;
+        place-items: center;
+        text-align: center;
+        gap: 18px;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .pill {
+        padding: 12px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 700;
+      }
+
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .compare .left {
+        border-left: 5px solid var(--amber);
+      }
+      .compare .right {
+        border-left: 5px solid var(--green);
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--muted);
+        font-size: 0.98rem;
+      }
+
+      .controls {
+        position: fixed;
+        right: 20px;
+        bottom: 18px;
+        display: flex;
+        gap: 10px;
+        z-index: 20;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.92);
+        color: white;
+        border-radius: 999px;
+        padding: 12px 16px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+      }
+
+      .mini {
+        font-size: 0.94rem;
+        color: var(--muted);
+      }
+
+      @media (max-width: 960px) {
+        .slide {
+          padding: 28px 20px 90px;
+        }
+        .content,
+        .content.three,
+        .two,
+        .three,
+        .compare {
+          grid-template-columns: 1fr;
+        }
+        .footer {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck">
+      <section class="slide active">
+        <header>
+          <div class="eyebrow" Visual Aid</div>
+          <h1>Express Controllers, Responses, and Middleware</h1>
+        </header>
+        <div class="content single">
+          <div class="card center">
+            <p class="muted">
+              A-friendly slide deck based on the lesson content about
+              controllers as the middleman, common response methods, middleware
+              chains, and error handling.
+            </p>
+            <div class="flow">
+              <div class="node route">Route</div>
+              <div class="arrow">→</div>
+              <div class="node controller">Controller</div>
+              <div class="arrow">→</div>
+              <div class="node model">Model</div>
+              <div class="arrow">→</div>
+              <div class="node view">View / JSON</div>
+            </div>
+            <div class="pill-row">
+              <div class="pill">res.send</div>
+              <div class="pill">res.json</div>
+              <div class="pill">Middleware</div>
+              <div class="pill">next()</div>
+              <div class="pill">Error Handler</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <div>Use ← → or the on-screen buttons to navigate.</div>
+          <div>1 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">Core idea</div>
+          <h2>What does a controller do?</h2>
+        </header>
+        <div class="content">
+          <div class="card stack">
+            <div>
+              <span class="tag">Controller = middleman</span>
+              <p>It decides what to do when a request arrives.</p>
+            </div>
+            <div>
+              <span class="tag green">Talks to the model</span>
+              <p>
+                It asks the model for data, but lets the model do the heavy
+                lifting.
+              </p>
+            </div>
+            <div>
+              <span class="tag purple">Talks to the view</span>
+              <p>
+                It chooses what should be rendered or returned, but lets the
+                view build the final HTML or JSON output.
+              </p>
+            </div>
+          </div>
+          <div class="card center">
+            <div class="flow">
+              <div class="node route">Incoming request</div>
+              <div class="arrow">→</div>
+              <div class="node controller">Controller</div>
+              <div class="arrow">→</div>
+              <div class="node model">Ask model</div>
+              <div class="arrow">→</div>
+              <div class="node view">Send response</div>
+            </div>
+            <p class="mini">
+              A controller is really just a function with well-defined
+              responsibilities inside MVC.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <div>The controller is the “brains” of the request.</div>
+          <div>2 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">Response methods</div>
+          <h2>Ways a controller can respond</h2>
+        </header>
+        <div class="content three">
+          <div class="card stack">
+            <span class="tag">res.send</span>
+            <p>General-purpose response method.</p>
+            <p class="mini">Can send text, objects, arrays, and more.</p>
+          </div>
+          <div class="card stack">
+            <span class="tag purple">res.json</span>
+            <p>Explicitly sends JSON.</p>
+            <p class="mini">Useful when building APIs.</p>
+          </div>
+          <div class="card stack">
+            <span class="tag pink">res.redirect</span>
+            <p>Sends the client to a different URL.</p>
+            <p class="mini">Useful after actions like form submissions.</p>
+          </div>
+          <div class="card stack">
+            <span class="tag green">res.render</span>
+            <p>Renders a view template into HTML.</p>
+            <p class="mini">Common in server-rendered apps.</p>
+          </div>
+          <div class="card stack">
+            <span class="tag amber">res.status</span>
+            <p>Sets the status code.</p>
+            <p class="mini">
+              Usually chained like <code>res.status(404).send(...)</code>.
+            </p>
+          </div>
+          <div class="card center">
+            <p><strong>Key rule</strong></p>
+            <p class="mini">Set status first, then send the response.</p>
+            <div class="code">res.status(404).send("Not found")</div>
+          </div>
+        </div>
+        <div class="footer">
+          <div>
+            These are the main tools controllers use to answer requests.
+          </div>
+          <div>3 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">JSON responses</div>
+          <h2>res.send vs res.json</h2>
+        </header>
+        <div class="content single">
+          <div class="compare">
+            <div class="card left">
+              <p><strong>res.send</strong></p>
+              <ul>
+                <li>Flexible and general-purpose.</li>
+                <li>Can send many data types.</li>
+                <li>Sometimes handles objects as JSON automatically.</li>
+              </ul>
+            </div>
+            <div class="card right">
+              <p><strong>res.json</strong></p>
+              <ul>
+                <li>Always sends JSON.</li>
+                <li>More explicit and convenient for APIs.</li>
+                <li>Usually clearer when the response is meant to be JSON.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card center" style="margin-top: 18px">
+            <p>
+              <strong>Simple rule of thumb:</strong> if you are sending JSON,
+              use <code>res.json</code>.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <div>Use the method that clearly matches your intent.</div>
+          <div>4 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">Important gotcha</div>
+          <h2>Sending a response does not stop the function</h2>
+        </header>
+        <div class="content">
+          <div class="card">
+            <div class="code">
+              app.use((req, res) => { res.send("Hello"); console.log("will still
+              run!!"); res.send("Bye"); });
+            </div>
+          </div>
+          <div class="card stack">
+            <span class="tag red">Why this is a problem</span>
+            <ul>
+              <li><code>res.send()</code> ends the request-response cycle.</li>
+              <li>But the rest of the function still keeps executing.</li>
+              <li>Trying to send again causes an error.</li>
+            </ul>
+            <div class="code">
+              if (!author) { res.status(404).send("Author not found"); return; }
+            </div>
+            <p class="mini">
+              Use <code>return</code> after early responses when needed.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <div>Responding once is not the same as exiting the function.</div>
+          <div>5 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">Middleware runs in the order you register it</div>
+          <h2>Middleware Execution order</h2>
+        </header>
+        <div class="content single">
+          <div class="card center">
+            <div class="flow">
+              <div class="node middleware">Middleware 1</div>
+              <div class="arrow">→</div>
+              <div class="node middleware">Middleware 2</div>
+              <div class="arrow">→</div>
+              <div class="node controller">Controller</div>
+              <div class="arrow">→</div>
+              <div class="node error">Error handler</div>
+            </div>
+            <p class="muted">
+              Because order matters, middleware that changes the request object
+              is often placed near the top of the app.
+            </p>
+          </div>
+          <div class="two" style="margin-top: 18px">
+            <div class="card">
+              <span class="tag">Application-level</span>
+              <p>Bound to an instance of Express.</p>
+              <p>
+                Registered with <code>app.use()</code> or
+                <code>app.METHOD()</code>.
+              </p>
+              <p>
+                Body parsers (e.g. express.json, express.urlencoded) - These
+                allow us to correctly parse the incoming request’s body, so that
+                we can use it through req.body
+              </p>
+            </div>
+            <div class="card">
+              <span class="tag pink">Router-level</span>
+              <p>Bound to an instance of Express Router.</p>
+
+              <p>
+                Registered with <code>router.use()</code> or
+                <code>router.METHOD()</code>.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <div>If something should happen first, register it first.</div>
+          <div>7 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">Controllers vs Middleware</div>
+          <h2>Controllers</h2>
+        </header>
+        <div class="content">
+          <div class="card stack">
+            <p >
+              controllers are just functions. 
+              
+              <p> controller and middleware are
+              distinct concepts.</p> 
+              <p>Controllers are a key component of the MVC
+              and Middleware in
+              Express allow you to run code, modify requests, or end the
+              cycle in the request-response cycle </p> 
+              <p>So we are
+              using middleware in Express to implement the “Controller” part of
+              the MVC pattern</p>
+            </p>
+          </div>
+          <div class="card stack">
+            <p><strong>Controller + route</strong></p>
+            <div class="code">
+              async function getAuthorById(req, res) { const { authorId } =
+              req.params; const author = await
+              db.getAuthorById(Number(authorId)); if (!author) {
+              res.status(404).send("Author not found"); return; }
+              res.send(`Author Name: ${author.name}`); }
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <div>
+            The controller reads params, calls the DB function, then responds.
+          </div>
+          <div>8 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">Handling errors</div>
+          <h2>Two ways to deal with async errors</h2>
+        </header>
+        <div class="content">
+          <div class="card stack">
+            <span class="tag amber">Option 1: try/catch</span>
+            <div class="code">
+              try { const author = await db.getAuthorById(Number(authorId));
+              res.send(`Author Name: ${author.name}`); } catch (error) {
+              res.status(500).send("Internal Server Error"); }
+            </div>
+          </div>
+          <div class="card stack">
+            <span class="tag red"
+              >Option 2: throw and let error middleware handle it</span
+            >
+            <div class="code">
+              app.use((err, req, res, next) => { console.error(err);
+              res.status(500).send(err.message); });
+            </div>
+            <p class="mini">
+              Error middleware must have four parameters:
+              <code>(err, req, res, next)</code>.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <div>Centralized error handling keeps controllers cleaner.</div>
+          <div>9 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">Custom errors</div>
+          <h2>How to return better status codes</h2>
+        </header>
+        <div class="content">
+          <div class="card stack">
+            <p><strong>Create a custom error</strong></p>
+            <div class="code">
+              class CustomNotFoundError extends Error { constructor(message) {
+              super(message); this.statusCode = 404; this.name =
+              "NotFoundError"; } }
+            </div>
+          </div>
+          <div class="card stack">
+            <p><strong>Use it in the controller</strong></p>
+            <div class="code">
+              if (!author) { throw new CustomNotFoundError("Author not found");
+              } app.use((err, req, res, next) => { res.status(err.statusCode ||
+              500).send(err.message); });
+            </div>
+            <p class="mini">
+              Now your error handler can send 404 for missing data and 500 for
+              unexpected errors.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <div>Custom errors make the error middleware smarter.</div>
+          <div>10 / 11</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <header>
+          <div class="eyebrow">Wrap-up</div>
+          <h2>The mental model</h2>
+        </header>
+        <div class="content single">
+          <div class="card center">
+            <div class="pill-row">
+              <div class="pill">Controller = function with a job</div>
+              <div class="pill">Middleware runs in order</div>
+              <div class="pill">next() passes control</div>
+              <div class="pill">Error middleware catches failures</div>
+            </div>
+            <div class="flow" style="margin-top: 10px">
+              <div class="node route">Request</div>
+              <div class="arrow">→</div>
+              <div class="node middleware">Middleware</div>
+              <div class="arrow">→</div>
+              <div class="node controller">Controller</div>
+              <div class="arrow">→</div>
+              <div class="node view">Response</div>
+            </div>
+            <p>
+              A controller decides what should happen. Middleware shapes the
+              journey. The response methods finish the request. The error
+              handler catches what goes wrong.
+            </p>
+          </div>
+        </div>
+        <div class="footer">
+          <div>Keyboard: ← →, Home, End.</div>
+          <div>11 / 11</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="controls">
+      <button id="prevBtn">← Prev</button>
+      <button id="nextBtn">Next →</button>
+    </div>
+
+    <script>
+      const slides = [...document.querySelectorAll(".slide")];
+      let current = 0;
+
+      function showSlide(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, i) =>
+          slide.classList.toggle("active", i === current),
+        );
+      }
+
+      document
+        .getElementById("prevBtn")
+        .addEventListener("click", () => showSlide(current - 1));
+      document
+        .getElementById("nextBtn")
+        .addEventListener("click", () => showSlide(current + 1));
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === "PageDown")
+          showSlide(current + 1);
+        if (e.key === "ArrowLeft" || e.key === "PageUp") showSlide(current - 1);
+        if (e.key === "Home") showSlide(0);
+        if (e.key === "End") showSlide(slides.length - 1);
+      });
+    </script>
+  </body>
+</html>
