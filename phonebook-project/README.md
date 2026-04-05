@@ -126,3 +126,45 @@ The correct place for closing the database connection is at the end of the callb
   })```
 
 NB: If you define a model with the name Person, mongoose will automatically name the associated collection as people.
+
+
+
+
+
+
+
+Exercises 3.13.-3.14.
+
+3.13: Phonebook database, step 1
+
+Change the fetching of all phonebook entries so that the data is fetched from the database.
+
+In the following exercises, write all Mongoose-specific code into its own module
+
+3.14: Phonebook database, step 2
+
+Change the backend so that new numbers are saved to the database.
+At this stage, you can ignore whether there is already a person in the database with the same name as the person you are adding.
+
+
+
+Exercises 3.15.-3.18.
+3.15: Phonebook database, step 3
+
+Change the backend so that deleting phonebook entries is reflected in the database.
+
+3.16: Phonebook database, step 4
+
+Move the error handling of the application to a new error handler middleware.
+3.17*: Phonebook database, step 5
+
+If the user tries to create a new phonebook entry for a person whose name is already in the phonebook, try to update the phone number of the existing entry by making an HTTP PUT request to the entry's unique URL.
+
+Modify the backend to support this request.
+
+3.18*: Phonebook database step 6
+
+Also update the handling of the HTTP GET api/persons/:id and info routes to use the database, and verify that they work directly with the browser, Postman, or VS Code REST client.
+
+Inspecting an individual phonebook entry from the browser should look like this:
+screenshot of browser showing one person with api/persons/their_id 
