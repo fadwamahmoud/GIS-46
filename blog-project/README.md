@@ -155,3 +155,65 @@ Improve the search functionality by adding an index for the title field.
 Modify the blog schema so that searching by title is better supported. After adding the index, verify that the application still works as expected.
 
 
+4.21: Blog feature expansion, step 4
+
+Implement filtering blogs by author.
+
+Expand the GET /api/blogs endpoint so that it also supports an author query parameter.
+
+For example:
+
+GET /api/blogs?author=Robert Martin
+
+The operation should:
+
+return only blogs written by the given author
+work together with the search parameter
+
+For example, the following should also work:
+
+GET /api/blogs?search=clean&author=Robert Martin
+
+4.22: Blog feature expansion, step 5
+
+Implement sorting for blog lists.
+
+Expand the GET /api/blogs endpoint so that the results can be sorted using query parameters.
+
+For example:
+
+GET /api/blogs?sortBy=likes&order=desc
+
+Support sorting by:
+
+likes
+
+Support both:
+
+asc
+desc
+
+If the client provides an unsupported sort field, the operation should respond with a suitable error message and status code.
+
+4.23: Blog feature expansion, step 6
+
+Implement pagination for blog lists.
+
+Expand the GET /api/blogs endpoint so that it supports the query parameters:
+
+page
+limit
+
+For example:
+
+GET /api/blogs?page=2&limit=5
+
+The operation should:
+
+return only the requested slice of blogs
+support pagination together with searching, filtering, and sorting
+return a JSON response that also includes pagination metadata, such as:
+current page
+page size
+total number of matching blogs
+total number of pages
