@@ -61,7 +61,7 @@ If you're having issues with content.body being undefined for seemingly no reaso
 
 
 
-Exercises 4.15.-4.23.
+Exercises 4.15.-4.17.
 
 In the next exercises, the basics of user management will be implemented for the Bloglist application.
 
