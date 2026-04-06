@@ -109,3 +109,49 @@ and listing all users also displays the blogs created by each user:
 pic blog-2.png
 
 api/users embeds blogs in JSON data
+
+
+
+
+
+
+4.18: Blog feature expansion, step 1
+
+Implement functionality for liking a blog.
+
+Create an endpoint that allows the number of likes of a blog to be increased by one. The endpoint should identify the blog by its id and return the updated blog as JSON.
+
+A suitable endpoint could be:
+
+PATCH /api/blogs/:id/like
+
+The operation should:
+
+return status code 200 with the updated blog if successful
+return status code 404 if the blog does not exist
+return status code 400 if the provided id is malformed
+4.19: Blog feature expansion, step 2
+
+Implement searching blogs by title.
+
+Expand the endpoint for listing blogs so that it supports a query parameter called search.
+
+For example:
+
+GET /api/blogs?search=react
+
+The operation should:
+
+return only blogs whose title matches the given search term
+perform the search case-insensitively
+support partial matches, so searching for node should also match titles such as "Learning Node.js"
+
+You may first implement the search using a regular expression.
+
+4.20: Blog feature expansion, step 3
+
+Improve the search functionality by adding an index for the title field.
+
+Modify the blog schema so that searching by title is better supported. After adding the index, verify that the application still works as expected.
+
+
