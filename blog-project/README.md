@@ -57,3 +57,55 @@ Refactor the application into separate modules as shown earlier in this part of 
 One best practice is to commit your code every time it is in a stable state. This makes it easy to rollback to a situation where the application still works.
 
 If you're having issues with content.body being undefined for seemingly no reason, make sure you didn't forget to add app.use(express.json()) near the top of the file.
+
+
+
+
+Exercises 4.15.-4.23.
+
+In the next exercises, the basics of user management will be implemented for the Bloglist application.
+
+One more warning: If you notice you are mixing async/await and then calls, it is 99% certain you are doing something wrong. Use either or, never both.
+
+
+4.15: Blog List Expansion, step 3
+
+Implement a way to create new users by doing an HTTP POST request to address api/users. Users have a username, password and name.
+
+Do not save passwords to the database as clear text, use the bcrypt library like we did
+
+
+Implement a way to see the details of all users by doing a suitable HTTP request.
+
+The list of users can, for example, look as follows:
+
+See pic blog-1.png
+
+
+browser api/users shows JSON data of two users
+
+
+4.16*: Blog List Expansion, step 4
+
+Add a feature which adds the following restrictions to creating new users: Both username and password must be given and both must be at least 3 characters long. The username must be unique.
+
+The operation must respond with a suitable status code and some kind of an error message if an invalid user is created.
+
+NB Do not test password restrictions with Mongoose validations. It is not a good idea because the password received by the backend and the password hash saved to the database are not the same thing. The password length should be validated in the controller as we did last session
+
+
+
+4.17: Blog List Expansion, step 5
+
+Expand blogs so that each blog contains information on the creator of the blog.
+
+Modify adding new blogs so that when a new blog is created, any user from the database is designated as its creator (for example the one found first). Which user is the creator does not matter just yet. The functionality is finished later
+
+Modify listing all blogs so that the creator's user information is displayed with the blog:
+api/blogs embeds creators user information in JSON data
+
+and listing all users also displays the blogs created by each user:
+
+pic blog-2.png
+
+api/users embeds blogs in JSON data
