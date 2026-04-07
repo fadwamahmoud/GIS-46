@@ -242,3 +242,52 @@ routes can access the token with `request.token`:
 
 })```
 
+4.26 Delete endpoint
+
+Change the delete blog operation so that a blog can be deleted only by the user who added it. Therefore, deleting a blog is possible only if the token sent with the request is the same as that of the blog's creator.
+
+If deleting a blog is attempted without a token or by an invalid user, the operation should return a suitable status code.
+
+Note that if you fetch a blog from the database,
+
+const blog = await Blog.findById(...)
+the field blog.user does not contain a string, but an object. So if you want to compare the ID of the object fetched from the database and a string ID, a normal comparison operation does not work. The ID fetched from the database must be parsed into a string first.
+
+if ( blog.user.toString() === userid.toString() ) ...
+
+4.27: 
+Both the new blog creation and blog deletion need to find out the identity of the user who is doing the operation. The middleware tokenExtractor that we did in exercise 4.20 helps but still both the handlers of post and delete operations need to find out who the user holding a specific token is.
+
+Now create a new middleware called userExtractor that identifies the user related to the request and attaches it to the request object. After registering the middleware, the post and delete handlers should be able to access the user directly by referencing request.user:
+
+blogsRouter.post('/', userExtractor, async (request, response) => {
+  // get user from request object
+  const user = request.user
+  // ..
+})
+
+blogsRouter.delete('/:id', userExtractor, async (request, response) => {
+  // get user from request object
+  const user = request.user
+  // ..
+})
+Note that in this case, the userExtractor middleware has been registered with individual routes, so it is only executed in certain cases. So instead of using userExtractor with all the routes,
+
+// use the middleware in all routes
+app.use(middleware.userExtractor)
+
+app.use('/api/blogs', blogsRouter)  
+app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
+we could register it to be only executed with path /api/blogs routes:
+
+// use the middleware only in /api/blogs routes
+app.use('/api/blogs', middleware.userExtractor, blogsRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
+This is done by chaining multiple middleware functions as parameters to the use function. In the same way, middleware can also be registered only for individual routes:
+
+router.post('/', userExtractor, async (request, response) => {
+  // ...
+})
+Make sure that fetching all blogs with a GET request still works without a token.
