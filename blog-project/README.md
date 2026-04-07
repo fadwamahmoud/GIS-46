@@ -217,3 +217,28 @@ current page
 page size
 total number of matching blogs
 total number of pages
+
+
+
+4.23 Blog list expansion
+Implement token based authentication 
+
+4.24
+Modify adding new blog posts so that it's only possible if a valid token is sent wih the HTTP POST request. The user identified by the token is designated as the creator of the blog.
+
+4.25
+Create a middleware that extracts the token from the Authorization header and assign it to the token field field og the request object
+
+`app.use(middleware.tokenExtractor)`
+`app.use(tokenExtractor)`
+
+routes can access the token with `request.token`:
+
+```blogsRouter.post('/', async (req,res) => {
+
+  // ....
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  // .....
+
+})```
+
